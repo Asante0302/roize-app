@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Roize</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="%230A0A0F"/><rect x="9" y="9" width="14" height="14" rx="4" transform="rotate(45 16 16)" fill="%23C6FF3C"/></svg>'>
+<link rel="apple-touch-icon" href="roize_brain_hero.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Roize">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="description" content="Roize · chaque matin, la bonne action pour faire grossir ton business.">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --bg:#0A0A0F; --s1:#121218; --s2:#16161E; --s3:#1C1C26;
+  --txt:#F6F4FF; --t2:rgba(255,255,255,.72); --t3:rgba(255,255,255,.50); --faint:#56536F;
+  --lime:#C6FF3C; --lime2:#B6FF3C; --lime-ink:#0E2200; --em:#2BD67B;
+  --ok:#6EE7A8; --ok-bg:rgba(43,214,123,.10); --ok-line:rgba(43,214,123,.30);
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+  --aurora:linear-gradient(100deg,#4F6BFF,#8B3CFF,#E24BD0);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;width:100%;overscroll-behavior:none}
+body{position:fixed;inset:0;font-family:'Satoshi',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#000;color:var(--txt);display:flex;align-items:center;justify-content:center}
+.phone{position:relative;width:100%;max-width:430px;height:100vh;height:100dvh;max-height:100dvh;background:var(--bg);color:var(--txt);
+  overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:480px){.phone{height:92vh;max-height:920px;border-radius:46px;
+  box-shadow:0 50px 130px -30px rgba(139,60,255,.45),0 0 0 1px rgba(255,255,255,.06)}}
+
+/* halo + grain */
+.halo{position:absolute;top:-12%;left:-14%;right:-14%;height:44%;background:var(--aurora);opacity:.5;filter:blur(60px);z-index:0;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 12%,transparent 95%);mask-image:linear-gradient(180deg,#000 0%,#000 12%,transparent 95%);pointer-events:none}
+.grain{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* status bar */
+.status{position:absolute;top:0;left:0;right:0;z-index:9;display:flex;justify-content:space-between;align-items:center;
+  padding:max(15px,env(safe-area-inset-top)) 26px 0;font-weight:700;font-size:14.5px;color:var(--txt);pointer-events:none}
+@media(display-mode:standalone){.status{display:none}}
+.batt{width:23px;height:12px;border:1.4px solid rgba(255,255,255,.7);border-radius:3.5px;position:relative;display:inline-block}
+.batt::before{content:"";position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:72%;background:#fff;border-radius:1.5px}
+.batt::after{content:"";position:absolute;right:-3px;top:3.5px;width:2px;height:4px;background:rgba(255,255,255,.7);border-radius:0 2px 2px 0}
+
+.screen{position:absolute;inset:0;z-index:1;display:none;flex-direction:column;padding:max(32px,calc(env(safe-area-inset-top) + 12px)) 22px calc(26px + env(safe-area-inset-bottom));overflow-y:auto}
+.screen.active{display:flex}
+.screen::-webkit-scrollbar{display:none}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* animations : cascade d'apparition par ecran */
+.screen.active>*{animation:rise .55s cubic-bezier(.2,.85,.3,1) backwards}
+.screen.active>*:nth-child(1){animation-delay:.04s}
+.screen.active>*:nth-child(2){animation-delay:.10s}
+.screen.active>*:nth-child(3){animation-delay:.16s}
+.screen.active>*:nth-child(4){animation-delay:.22s}
+.screen.active>*:nth-child(5){animation-delay:.28s}
+.screen.active>*:nth-child(6){animation-delay:.34s}
+.screen.active>*:nth-child(n+7){animation-delay:.40s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* trace des courbes */
+.draw{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 1.6s .35s cubic-bezier(.3,.8,.3,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+/* shimmer sur les boutons lime */
+.btn-lime{position:relative;overflow:hidden}
+.btn-lime::after{content:"";position:absolute;top:0;left:-65%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:shimmer 4s ease-in-out infinite;pointer-events:none}
+@keyframes shimmer{0%,55%{left:-65%}100%{left:150%}}
+.flex1{flex:1}
+.center{align-items:center;text-align:center;justify-content:center}
+
+/* type */
+h1{font-family:'Clash Display';font-weight:600;font-size:34px;line-height:1.12;letter-spacing:-.3px;word-spacing:1px}
+h2{font-family:'Clash Display';font-weight:600;font-size:27px;line-height:1.18;letter-spacing:-.2px;word-spacing:1px}
+.kick{font-family:'Geist Mono';font-size:11.5px;font-weight:500;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
+.sub{color:var(--t2);font-size:15px;line-height:1.55;margin-top:12px}
+.mono{font-family:'Geist Mono';font-variant-numeric:tabular-nums}
+.lime{color:var(--lime)}
+
+/* brand */
+.brand{display:flex;align-items:center;gap:9px;font-family:'Clash Display';font-weight:700;font-size:21px}
+.dmark{width:15px;height:15px;background:var(--aurora);transform:rotate(45deg);border-radius:3px;box-shadow:0 0 12px rgba(198,255,60,.4)}
+.dmark.l{background:var(--lime)}
+
+/* buttons */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:1.6px solid transparent;cursor:pointer;
+  font-family:'Satoshi';font-size:16.5px;font-weight:700;padding:19px;border-radius:999px;transition:transform .15s;color:#fff}
+.btn:active{transform:scale(.98)}
+.btn-lime{background:var(--lime);color:var(--lime-ink);box-shadow:0 14px 40px -12px rgba(198,255,60,.5)}
+.btn-aurora{background:linear-gradient(var(--s1),var(--s1)) padding-box, var(--aurora) border-box;color:#fff}
+.btn-ghost{background:transparent;color:var(--t3);font-weight:600;padding:14px}
+
+/* progress */
+.prog{height:5px;background:rgba(255,255,255,.1);border-radius:9px;overflow:hidden}
+.prog>i{display:block;height:100%;background:var(--aurora);border-radius:9px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+/* option cards */
+.opts{display:flex;flex-direction:column;gap:12px;margin-top:26px}
+.opt{display:flex;align-items:center;gap:14px;padding:17px 16px;border-radius:18px;cursor:pointer;background:var(--s1);
+  border:1.5px solid var(--line);transition:transform .15s,border-color .15s;color:var(--txt);font-size:16px;font-weight:600;width:100%;text-align:left}
+.opt:active{transform:scale(.99)}
+.opt .ic{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+.opt .ic svg{width:19px;height:19px;stroke:#cfcbe6;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.opt.sel{border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box}
+.opt.sel .ic{background:rgba(139,60,255,.2);border-color:transparent}
+.opt.sel .ic svg{stroke:var(--lime)}
+.opt .chk{margin-left:auto;flex:none;width:23px;height:23px;border-radius:50%;background:var(--lime);display:none;align-items:center;justify-content:center}
+.opt.sel .chk{display:flex}
+.opt .chk svg{width:13px;height:13px;stroke:var(--lime-ink);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.feed{margin-top:12px;background:var(--ok-bg);border:1px solid var(--ok-line);border-radius:14px;padding:13px 15px;font-size:13.5px;line-height:1.5;color:var(--ok);font-weight:500;display:none;gap:9px}
+.feed.on{display:flex;animation:in .3s ease}
+.feed b{color:#fff}
+
+/* welcome spark */
+.spark{position:relative;width:200px;height:200px;margin:10px auto;display:flex;align-items:center;justify-content:center}
+.spark .glow{position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(139,60,255,.9),rgba(139,60,255,0) 65%);filter:blur(8px);animation:breathe 4s ease-in-out infinite}
+.spark .core{position:absolute;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 45% 40%,#fff,#C6A0FF 50%,#8B3CFF);box-shadow:0 0 40px 8px rgba(198,255,60,.35),0 0 70px 20px rgba(139,60,255,.5)}
+.spark .ray{position:absolute;background:linear-gradient(var(--lime),transparent);width:3px;height:90px;border-radius:3px;opacity:.9}
+.spark .ray.v{height:150px}.spark .ray.h{transform:rotate(90deg);height:130px}
+@keyframes breathe{0%,100%{transform:scale(.92);opacity:.8}50%{transform:scale(1.08);opacity:1}}
+/* hero phenix (welcome) */
+.herophx{position:relative;width:240px;height:240px;margin:4px auto;display:flex;align-items:center;justify-content:center}
+.herophx .hglow{position:absolute;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle,rgba(139,60,255,.55),transparent 64%);filter:blur(16px);animation:breathe 4.2s ease-in-out infinite}
+.herophx img{position:relative;width:236px;height:236px;object-fit:contain;animation:floaty 5s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+/* score gauge */
+.gauge{position:relative;width:200px;height:200px;margin:6px auto}
+.gauge .ring{width:100%;height:100%;border-radius:50%;background:conic-gradient(var(--lime) calc(var(--p,78)*1%), rgba(255,255,255,.07) 0)}
+.gauge .hole{position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#16142a,#0c0b14);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .num{font-family:'Geist Mono';font-weight:600;font-size:54px;color:var(--lime);line-height:1}
+.gauge .lab{font-family:'Geist Mono';font-size:10.5px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;margin-top:4px}
+/* gem (cerveau) */
+.gauge .gem{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(45deg);width:58px;height:58px;border-radius:13px;
+  background:linear-gradient(135deg,#C9A6FF,#8B3CFF 55%,#5B2BFF);box-shadow:inset 0 3px 8px rgba(255,255,255,.4),0 10px 30px -6px rgba(139,60,255,.7)}
+.gauge .gnum{position:absolute;left:50%;bottom:17%;transform:translateX(-50%);font-family:'Geist Mono';font-weight:600;font-size:32px;color:var(--lime);z-index:2;text-shadow:0 2px 10px #0c0b14}
+.gauge .chole{position:absolute;inset:13px;border-radius:50%;background:#09080e}
+.gauge .phx{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:150px;height:150px;object-fit:contain;z-index:1;animation:bobp 5s ease-in-out infinite}
+@keyframes bobp{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,calc(-50% - 6px))}}
+
+/* cerveau = visuel néon + halo dynamique */
+.brainwrap2{position:relative;width:236px;height:236px;margin:6px auto 0;display:flex;align-items:center;justify-content:center}
+.bhalo2{position:absolute;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(139,60,255,.55),rgba(198,255,60,.10) 46%,transparent 70%);filter:blur(26px);transform:scale(var(--g,.85));opacity:var(--go,.4);transition:transform .9s,opacity .9s;animation:breathe 4.6s ease-in-out infinite}
+.bimg{position:relative;z-index:2;width:212px;height:212px;object-fit:contain;transition:filter .9s,transform .9s;animation:bob2 5.5s ease-in-out infinite}
+@keyframes bob2{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.fd.auto{cursor:default}
+.fd.auto .fdc{background:rgba(198,255,60,.14);color:var(--lime)}
+.feed{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.fd{display:flex;align-items:center;gap:13px;width:100%;background:var(--s1);border:1.5px solid var(--line);border-radius:15px;padding:14px 15px;color:var(--t2);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:transform .12s,border-color .15s}
+.fd:active{transform:scale(.98)}
+.fd .fde{font-size:22px;flex:none;filter:grayscale(.6);transition:.2s}
+.fd .fdl{flex:1;text-align:left}
+.fd .fdc{min-width:28px;height:28px;padding:0 9px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Geist Mono';font-size:13px;background:rgba(255,255,255,.06);color:var(--t3);flex:none;transition:.2s}
+.fd.on{border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box;color:var(--txt)}
+.fd.on .fde{filter:none;transform:scale(1.1)}
+.fd.on .fdc{background:var(--lime);color:var(--lime-ink)}
+
+/* glass card */
+.card{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+
+/* growth curve */
+.curve{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
+.curve .hd{display:flex;justify-content:space-between;font-size:12.5px;color:var(--t3);margin-bottom:8px}
+
+/* shock card */
+.shock{margin-top:14px;border-radius:18px;padding:20px;border:1.5px solid transparent;
+  background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.shock .k{font-family:'Geist Mono';font-size:11px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase}
+.shock .b{font-family:'Clash Display';font-weight:600;font-size:26px;line-height:1.15;margin-top:8px}
+/* timeline projection (plan) */
+.ptl{position:relative;padding-left:28px}
+.ptl::before{content:"";position:absolute;left:7px;top:8px;bottom:10px;width:2px;background:var(--line2)}
+.ptl .prow{position:relative;padding:9px 0}
+.ptl .prow .pdot{position:absolute;left:-28px;top:12px;width:14px;height:14px;border-radius:50%;border:2px solid var(--lime);background:var(--bg)}
+.ptl .prow.last .pdot{background:var(--lime);box-shadow:0 0 10px var(--lime)}
+.ptl .pt{font-family:'Geist Mono';font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--lime)}
+.ptl .pv{font-size:14.5px;font-weight:600;margin-top:2px;line-height:1.35;color:var(--txt)}
+
+/* action card (home) */
+.action{border-radius:22px;padding:20px;border:1.5px solid transparent;background:linear-gradient(var(--s1),var(--s1)) padding-box, var(--aurora) border-box;box-shadow:0 24px 60px -34px rgba(139,60,255,.8)}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:'Geist Mono';font-size:11px;font-weight:600;color:var(--lime-ink);background:var(--lime);padding:5px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
+.action .ti{font-family:'Clash Display';font-weight:600;font-size:22px;line-height:1.25;margin-top:13px}
+.action .mt{color:var(--t2);font-size:13.5px;margin-top:9px}
+
+/* timeline */
+.tl{margin-top:8px}
+.tl .row{display:flex;gap:14px;padding:7px 0}
+.tl .dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--lime);flex:none;margin-top:3px}
+.tl .dot.done{background:var(--lime)}
+.tl .tm{font-family:'Geist Mono';font-size:13px;color:var(--t3)}
+.tl .tt{font-size:14.5px;font-weight:600;margin-top:1px}
+.tl .row.done .tt{color:var(--t3);text-decoration:line-through}
+.tl .row.now .tm{color:var(--lime)}
+.tl .line{width:2px;background:var(--line2);margin-left:5px;flex:none}
+
+/* streak */
+.streak{display:inline-flex;align-items:center;gap:6px;font-family:'Geist Mono';font-weight:600;font-size:14px;color:var(--lime);
+  background:rgba(198,255,60,.1);border:1px solid rgba(198,255,60,.3);padding:7px 13px;border-radius:999px}
+
+/* stat cards */
+.stats{display:flex;gap:12px;margin-top:14px}
+.stat{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stat .v{font-family:'Geist Mono';font-weight:600;font-size:28px}
+.stat .v.l{color:var(--lime)}
+.stat .l{font-size:12px;color:var(--t3);margin-top:3px}
+
+/* sparkline */
+.spk .hd{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--t2);margin-bottom:6px}
+
+/* paywall plans */
+.plan{position:relative;border-radius:18px;padding:17px 18px;background:var(--s1);border:1.5px solid var(--line);margin-top:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.plan.best{border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.plan .pn{font-weight:700;font-size:17px}
+.plan .pp{font-family:'Geist Mono';font-size:13.5px;color:var(--t2);margin-top:3px}
+.plan .badge{position:absolute;top:-10px;left:16px;font-family:'Geist Mono';font-size:11px;font-weight:600;color:var(--lime-ink);background:var(--lime);padding:2px 9px;border-radius:7px}
+.plan .r{width:24px;height:24px;border-radius:50%;border:2px solid var(--line2);flex:none}
+.plan.sel .r{border-color:transparent;background:var(--lime);display:flex;align-items:center;justify-content:center}
+.plan.sel .r svg{width:13px;height:13px;stroke:var(--lime-ink);stroke-width:2.6;fill:none}
+.tline{display:flex;justify-content:space-between;margin:18px 4px 4px;position:relative}
+.tline::before{content:"";position:absolute;left:8%;right:8%;top:6px;height:2px;background:var(--line2)}
+.tstep{display:flex;flex-direction:column;align-items:center;gap:7px;font-family:'Geist Mono';font-size:10.5px;color:var(--t3);width:33%;text-align:center;position:relative}
+.tstep .d{width:13px;height:13px;border-radius:50%;background:var(--s3);border:2px solid var(--line2)}
+.tstep.on .d{background:var(--lime);border-color:var(--lime)}
+.tstep.on{color:var(--lime)}
+.social{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--t2);font-size:13px;margin-top:16px}
+.logos{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px;opacity:.6;font-size:13px;font-weight:600}
+
+/* tab bar */
+.tabbar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:25;display:flex;gap:6px;padding:8px;
+  background:rgba(20,19,28,.86);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:999px}
+.screen .tabbar{display:none}
+.tabbar .tab{width:54px;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tabbar .tab svg{width:23px;height:23px;stroke:var(--t3);fill:none;stroke-width:1.8}
+.tabbar .tab.on{background:rgba(198,255,60,.12)}
+.tabbar .tab.on svg{stroke:var(--lime)}
+#home,#cerveau,#agent,#profil{padding-bottom:96px}
+#suivi{padding-bottom:92px}
+
+/* chat */
+.chat{flex:1;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding:6px 0}
+.msg{max-width:84%;padding:13px 15px;border-radius:18px;font-size:14.5px;line-height:1.45}
+.msg.bot{align-self:flex-start;background:var(--s1);border:1px solid var(--line);border-bottom-left-radius:6px}
+.msg.usr{align-self:flex-end;background:var(--aurora);border-bottom-right-radius:6px}
+.chatbar{display:flex;gap:9px;align-items:center;padding-top:10px}
+.chatbar input{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:999px;padding:14px 17px;color:var(--txt);font-family:inherit;font-size:14.5px;outline:none}
+.chatbar .send{width:48px;height:48px;border-radius:50%;background:var(--lime);border:none;color:var(--lime-ink);font-size:18px;flex:none;cursor:pointer}
+/* coach chat : réfléchit + chips + carte mission */
+.msg{animation:rise .35s cubic-bezier(.2,.85,.3,1) backwards}
+.chat .think{display:flex;gap:5px;align-items:center}
+.chat .think .dot{width:7px;height:7px;border-radius:50%;background:var(--t3);animation:cblink 1.2s infinite}
+.chat .think .dot:nth-child(2){animation-delay:.18s}
+.chat .think .dot:nth-child(3){animation-delay:.36s}
+@keyframes cblink{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.cchips{display:flex;flex-wrap:wrap;gap:8px}
+.cchip{background:var(--s2);border:1.5px solid var(--line2);border-radius:999px;padding:9px 14px;color:var(--txt);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:transform .12s}
+.cchip:active{transform:scale(.95)}
+.cchip.sel{border-color:transparent;background:var(--lime);color:var(--lime-ink)}
+.mcard{max-width:90%}
+.mcard .mact{display:flex;gap:8px;margin-top:10px}
+.mcard .mb{flex:1;border:1.4px solid var(--line2);background:var(--s2);border-radius:11px;padding:9px 8px;color:var(--t2);font-size:12.5px;font-weight:700;cursor:pointer;transition:transform .12s}
+.mcard .mb.keep{border-color:transparent;background:var(--lime);color:var(--lime-ink)}
+.mcard .mb:active{transform:scale(.96)}
+
+/* dynamic quiz */
+.opt .sub2{display:block;font-weight:500;font-size:12.5px;color:var(--t3);margin-top:2px}
+.txt{width:100%;background:var(--s1);border:1.5px solid var(--line);border-radius:16px;padding:17px 18px;color:var(--txt);
+  font-family:'Clash Display';font-weight:600;font-size:19px;outline:none;transition:border-color .15s;margin-top:26px}
+.txt:focus{border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.txt::placeholder{color:var(--faint);font-weight:500}
+
+/* check-in chips (cerveau) */
+.ckrow{margin-top:16px}
+.ckrow .lbl{font-family:'Geist Mono';font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.chips{display:flex;gap:8px}
+.chip{flex:1;background:var(--s1);border:1.5px solid var(--line);border-radius:13px;padding:11px 6px;color:var(--t2);
+  font-family:'Satoshi';font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,border-color .15s;text-align:center}
+.chip:active{transform:scale(.97)}
+.chip.sel{border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box;color:var(--txt)}
+
+/* slump card */
+.slump{margin-top:16px;border-radius:18px;padding:16px 17px;background:rgba(224,97,60,.10);border:1.5px solid rgba(224,97,60,.35);text-align:left}
+.slump .st{font-family:'Geist Mono';font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#F0A07A;font-weight:600}
+.slump .sc{font-size:14px;line-height:1.5;margin-top:8px;color:var(--txt)}
+.slump .sf{font-size:13.5px;line-height:1.5;margin-top:10px;color:var(--t2)}
+.slump .sf b{color:var(--lime)}
+
+/* fit banner (report) */
+.fitb{margin-top:14px;border-radius:14px;padding:15px 16px;font-size:13.5px;line-height:1.55;text-align:left}
+.fitb.hard{background:rgba(224,97,60,.12);border:1px solid rgba(224,97,60,.4)}
+.fitb.soft{background:rgba(139,60,255,.14);border:1px solid rgba(139,60,255,.4)}
+.fitb b{color:var(--txt)}
+
+/* results bars (match) */
+.barwrap{height:7px;background:rgba(255,255,255,.08);border-radius:9px;overflow:hidden;margin-top:11px}
+.barwrap>i{display:block;height:100%;width:0;background:var(--aurora);border-radius:9px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.rcard.top .barwrap>i{background:var(--lime)}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(18px);z-index:40;background:rgba(20,19,28,.96);backdrop-filter:blur(16px);border:1px solid var(--line2);color:var(--txt);font-size:14px;font-weight:600;padding:12px 18px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:300px;text-align:center;line-height:1.4}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* confetti */
+.confetti{position:absolute;inset:0;z-index:39;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(760px) rotate(560deg);opacity:.15}}
+/* bottom sheet (astuces) */
+.sheet{position:absolute;inset:0;z-index:42;background:rgba(6,6,10,.55);backdrop-filter:blur(3px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet.show{opacity:1;pointer-events:auto}
+.sheetcard{width:100%;background:var(--s2);border-top-left-radius:26px;border-top-right-radius:26px;border:1px solid var(--line2);padding:22px 22px 30px;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.show .sheetcard{transform:translateY(0)}
+/* agent build + chips */
+.msg.build{background:var(--s1);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:6px;max-width:90%}
+.buildline{font-family:'Geist Mono';font-size:12.5px;color:var(--t3);margin-top:6px}
+.buildline.ok{color:var(--lime)}
+.chips2{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.chips2::-webkit-scrollbar{display:none}
+.chip2{flex:none;background:var(--s1);border:1px solid var(--line);border-radius:999px;padding:9px 14px;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.chip2:active{transform:scale(.97)}
+/* feature card (home, ajoutée par l'agent) */
+.feat{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-top:10px}
+.feat .ft{font-weight:700;font-size:14.5px}
+.feat .fd{font-size:12.5px;color:var(--t3);margin-top:2px}
+.feat .fdot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime);flex:none}
+/* profil */
+.prow{display:flex;align-items:center;gap:13px;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:15px;margin-top:10px;width:100%;text-align:left;color:var(--txt);font-weight:600;font-size:15px;cursor:pointer}
+.prow .pic{width:34px;height:34px;border-radius:10px;background:var(--s3);display:flex;align-items:center;justify-content:center;flex:none}
+.prow .pic svg{width:18px;height:18px;stroke:var(--t2);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.prow .pchev{margin-left:auto;color:var(--faint);font-size:18px}
+/* planner */
+.taskchip{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-top:9px;font-size:14px}
+.taskchip .ty{font-family:'Geist Mono';font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--lime);background:rgba(198,255,60,.1);border:1px solid rgba(198,255,60,.25);padding:3px 7px;border-radius:6px;flex:none}
+.taskchip .x{margin-left:auto;color:var(--faint);cursor:pointer;font-size:20px;flex:none;line-height:1}
+.blk{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:13px;margin-top:9px}
+.blk.rev{border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.blk .tm{font-family:'Geist Mono';font-size:13px;color:var(--lime);flex:none;width:46px}
+.blk .bt{font-weight:600;font-size:14px}
+.blk .bcat{font-size:11.5px;color:var(--t3);margin-top:2px}
+.ovf{margin-top:14px;border-radius:14px;padding:14px;background:rgba(224,97,60,.1);border:1px solid rgba(224,97,60,.3);font-size:13px;line-height:1.5}
+.tin{display:flex;gap:9px;margin-top:14px}
+.tin input{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:13px;padding:13px 15px;color:var(--txt);font-family:inherit;font-size:14.5px;outline:none}
+.tin .add{width:48px;height:48px;border-radius:13px;background:var(--s3);border:1px solid var(--line2);color:var(--lime);font-size:22px;flex:none;cursor:pointer}
+
+/* ===== HOME SANS PROJET (empty state) ===== */
+.empty-hero{position:relative;width:170px;height:170px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center}
+.empty-hero .eg{position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(139,60,255,.55),transparent 64%);filter:blur(16px);animation:breathe 4.2s ease-in-out infinite}
+.empty-hero .ec{position:relative;width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#C9A6FF,#8B3CFF 55%,#5B2BFF);transform:rotate(45deg);box-shadow:inset 0 3px 8px rgba(255,255,255,.4),0 14px 40px -8px rgba(139,60,255,.7)}
+
+/* ===== FLUX "ME LANCER" ===== */
+.lstep{display:none;flex-direction:column;flex:1}
+.lstep.on{display:flex;animation:in .4s ease}
+.gridopts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
+.bigopt{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:18px 16px;border-radius:18px;cursor:pointer;background:var(--s1);
+  border:1.5px solid var(--line);transition:transform .15s,border-color .15s;color:var(--txt);text-align:left}
+.bigopt:active{transform:scale(.98)}
+.bigopt .bv{font-family:'Clash Display';font-weight:600;font-size:24px}
+.bigopt .bl{font-size:12.5px;color:var(--t3);font-weight:500}
+.bigopt.sel{border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box}
+.bigopt.sel .bv{color:var(--lime)}
+
+/* ===== DASHBOARD PROJET ===== */
+.pj-head{display:flex;justify-content:space-between;align-items:flex-start;margin-top:2px}
+.pj-day{font-family:'Clash Display';font-weight:600;font-size:30px;line-height:1}
+.pj-day small{font-size:17px;color:var(--t3);font-weight:500}
+.pj-biz{font-family:'Geist Mono';font-size:12px;color:var(--t3);margin-top:5px;letter-spacing:.3px}
+.pj-meta{display:flex;gap:8px;margin-top:14px;font-size:12px}
+.pj-pill{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:13px;padding:10px 8px;text-align:center}
+.pj-pill .pv{font-family:'Geist Mono';font-weight:600;font-size:18px;color:var(--lime)}
+.pj-pill .pl{font-size:10.5px;color:var(--t3);margin-top:2px}
+.vsel{display:flex;gap:6px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:5px;margin-top:18px}
+.vsel button{flex:1;background:transparent;border:none;color:var(--t3);font-family:'Satoshi';font-weight:600;font-size:13px;padding:9px 4px;border-radius:10px;cursor:pointer;transition:.15s}
+.vsel button.on{background:var(--s3);color:var(--lime)}
+/* ---- SUIVI / dashboard ---- */
+.su-ca{background:linear-gradient(var(--s1),var(--s1)) padding-box,var(--aurora) border-box;border:1px solid transparent;border-radius:20px;padding:20px}
+.su-ca .lbl{font-family:'Geist Mono';font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3)}
+.su-ca .big{font-family:'Geist Mono';font-weight:600;font-size:42px;line-height:1.05;margin-top:6px;color:var(--txt)}
+.su-ca .big span{font-size:24px;color:var(--t2)}
+.su-ca .gline{font-size:12.5px;color:var(--t2);margin-top:8px}
+.su-ca .gline b{color:var(--lime)}
+.su-ca .goal{font-size:11.5px;color:var(--t3);margin-top:4px}
+.su-ca .goal u{color:var(--t2);cursor:pointer;text-decoration-style:dotted}
+.su-prog{height:7px;background:rgba(255,255,255,.1);border-radius:9px;overflow:hidden;margin-top:12px}
+.su-prog>i{display:block;height:100%;background:var(--aurora);border-radius:9px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.scard{background:var(--s1);border:1px solid var(--line);border-radius:15px;padding:13px 14px}
+.scard .v{font-family:'Geist Mono';font-weight:600;font-size:21px;color:var(--lime)}
+.scard .k{font-size:11px;color:var(--t3);margin-top:3px}
+.sblock-h{font-family:'Geist Mono';font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--faint);margin:18px 0 9px 2px}
+.schart{display:flex;align-items:flex-end;gap:6px;height:96px;background:var(--s1);border:1px solid var(--line);border-radius:15px;padding:12px 12px 8px}
+.schart .bw{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%}
+.schart .bar{width:100%;max-width:20px;background:var(--aurora);border-radius:5px 5px 2px 2px;min-height:3px;transition:height .5s cubic-bezier(.2,.8,.2,1);align-self:center}
+.schart .bar.z{background:rgba(255,255,255,.08)}
+.schart .bl{font-size:9px;color:var(--t3);font-family:'Geist Mono'}
+.sjournal{display:flex;flex-direction:column;gap:7px}
+.slog{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:13px;padding:11px 13px}
+.slog .ic{width:30px;height:30px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--s3)}
+.slog .tx{flex:1;min-width:0}
+.slog .tt{font-size:13.5px;color:var(--txt);font-weight:600}
+.slog .dt{font-size:11px;color:var(--t3);margin-top:1px}
+.slog .amt{font-family:'Geist Mono';font-weight:600;font-size:14px;color:var(--lime);flex:none}
+.slog .amt.neg{color:#FF7A7A}
+.slog .del{flex:none;background:none;border:none;color:var(--faint);font-size:17px;cursor:pointer;padding:2px 4px}
+.su-empty{text-align:center;color:var(--t3);font-size:13.5px;background:var(--s1);border:1px dashed var(--line2);border-radius:15px;padding:20px 16px}
+.logconfirm{background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok);border-radius:12px;padding:11px 14px;font-size:13px;margin-top:10px;animation:rise .4s both}
+.milestone{margin-top:16px;border-radius:16px;padding:14px 15px;border:1.5px solid transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.milestone .mk{font-family:'Geist Mono';font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3)}
+.milestone .mt{font-family:'Clash Display';font-weight:600;font-size:17px;margin-top:5px;line-height:1.2}
+
+/* tâche carrée cochable */
+.todo{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-top:10px;
+  transition:transform .15s,border-color .15s,opacity .2s;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.todo.drag{opacity:.85;border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box;box-shadow:0 16px 40px -16px rgba(139,60,255,.8);z-index:5;position:relative}
+.todo .grip{flex:none;width:18px;display:flex;flex-direction:column;gap:3px;cursor:grab;opacity:.4}
+.todo .grip i{display:block;height:2px;background:var(--t3);border-radius:2px}
+.todo .box{flex:none;width:25px;height:25px;border-radius:8px;border:2px solid var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.todo .box svg{width:13px;height:13px;stroke:var(--lime-ink);stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:.15s}
+.todo.done .box{background:var(--lime);border-color:var(--lime)}
+.todo.done .box svg{opacity:1}
+.todo .tbody{flex:1;min-width:0}
+.todo .tt{font-size:14.5px;font-weight:600;line-height:1.3}
+.todo.done .tt{color:var(--t3);text-decoration:line-through}
+.todo .tm{font-family:'Geist Mono';font-size:11px;color:var(--t3);margin-top:3px}
+.todo .tm .ms{color:var(--lime)}
+.todo .push{flex:none;background:none;border:none;color:var(--faint);font-size:13px;cursor:pointer;padding:6px;border-radius:8px;font-family:'Geist Mono'}
+.todo .exec{flex:none;background:none;border:none;font-size:16px;cursor:pointer;padding:4px 5px;border-radius:8px;line-height:1;opacity:.85}
+.todo .exec:active{transform:scale(.9)}
+.todo .push:active{color:var(--lime)}
+.todo.custom .tt::after{content:" ·";color:var(--lime)}
+
+/* grille mois */
+.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.mcell{aspect-ratio:1;border-radius:9px;background:var(--s1);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+  font-family:'Geist Mono';font-size:11px;color:var(--t3)}
+.mcell.done{background:var(--lime);border-color:var(--lime);color:var(--lime-ink);font-weight:700}
+.mcell.part{border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box;color:var(--txt)}
+.mcell.today{box-shadow:0 0 0 2px var(--lime)}
+
+/* ligne semaine */
+.wrow{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px}
+.wrow.today{border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.wrow .wd{font-family:'Geist Mono';font-size:12px;color:var(--lime);flex:none;width:48px}
+.wrow .wt{flex:1;font-size:13.5px;font-weight:600;line-height:1.3}
+.wrow .wc{font-family:'Geist Mono';font-size:12px;color:var(--t3);flex:none}
+.wrow.cleared .wc{color:var(--lime)}
+
+/* ===== THÈME CLAIR (papier) — opposé du dark violet/lime ===== */
+.phone.light{
+  --bg:#F4F1EA; --s1:#FFFFFF; --s2:#FBF9F4; --s3:#EFE9DE;
+  --txt:#1B1830; --t2:rgba(27,24,48,.72); --t3:rgba(27,24,48,.50); --faint:#9A93A8;
+  --lime:#6D28D9; --lime2:#7C3AED; --lime-ink:#FFFFFF; --em:#16A34A;
+  --ok:#15803D; --ok-bg:rgba(22,163,74,.09); --ok-line:rgba(22,163,74,.28);
+  --line:rgba(20,15,40,.10); --line2:rgba(20,15,40,.16);
+  background:#F4F1EA;
+}
+body:has(.phone.light){background:#E7E2D8}
+.phone.light .halo{opacity:.32}
+.phone.light .grain{opacity:.025}
+.phone.light .status{color:var(--txt)}
+.phone.light .batt{border-color:rgba(0,0,0,.5)} .phone.light .batt::before{background:#1B1830} .phone.light .batt::after{background:rgba(0,0,0,.5)}
+.phone.light .tabbar{background:rgba(255,255,255,.9);box-shadow:0 8px 30px -10px rgba(20,15,40,.25)}
+.phone.light .gauge .hole{background:radial-gradient(circle at 50% 40%,#fff,#F2ECFB)}
+.phone.light .gauge .chole{background:#fff}
+.phone.light .prog,.phone.light .barwrap,.phone.light .su-prog{background:rgba(20,15,40,.10)}
+.phone.light .opt .ic{background:rgba(20,15,40,.05)} .phone.light .opt .ic svg{stroke:#6D28D9}
+.phone.light .herophx img{mix-blend-mode:normal;box-shadow:0 18px 50px -18px rgba(109,40,217,.5)}
+.phone.light .btn-lime{box-shadow:0 14px 36px -14px rgba(109,40,217,.55)}
+.phone.light .chatbar input,.phone.light .txt,.phone.light .tin input{background:#fff}
+.phone.light .msg.bot{background:#fff}
+.phone.light .msg.usr{color:#fff}
+/* accents verts hardcodés -> violet */
+.phone.light .streak{background:rgba(109,40,217,.10);border-color:rgba(109,40,217,.30)}
+.phone.light .tabbar .tab.on{background:rgba(109,40,217,.12)}
+.phone.light .taskchip .ty{background:rgba(109,40,217,.10);border-color:rgba(109,40,217,.25)}
+.phone.light .fd.auto .fdc{background:rgba(109,40,217,.14)}
+.phone.light .spark .core{box-shadow:0 0 40px 8px rgba(109,40,217,.30),0 0 70px 20px rgba(109,40,217,.45)}
+.phone.light .dmark{box-shadow:0 0 12px rgba(109,40,217,.40)}
+.phone.light .streak{color:var(--lime)}
+/* courbes SVG : vert -> violet, blanc -> sombre */
+.phone.light path[stroke="#C6FF3C"]{stroke:#6D28D9}
+.phone.light circle[fill="#C6FF3C"]{fill:#6D28D9}
+.phone.light path[stroke="rgba(255,255,255,.25)"]{stroke:rgba(20,15,40,.28)}
+.phone.light path[stroke="rgba(255,255,255,.3)"]{stroke:rgba(20,15,40,.30)}
+/* toast lisible + couleurs sémantiques */
+.phone.light .toast{background:rgba(255,255,255,.97);color:var(--txt);border-color:var(--line2)}
+.phone.light .slog .amt{color:#6D28D9} .phone.light .slog .amt.neg{color:#DC2626}
+.phone.light .slump .st{color:#C2410C}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="halo"></div>
+  <div class="grain"></div>
+
+  <!-- WELCOME -->
+  <section class="screen active center" id="welcome">
+    <div class="brand" style="position:absolute;top:24px;left:24px"><span class="dmark l"></span>Roize</div>
+    <div class="flex1"></div>
+    <div class="herophx"><div class="hglow"></div><img src="roize_brain_hero_t.png" alt="Roize"/></div>
+    <div class="flex1"></div>
+    <h1 style="text-align:center">Transforme ta<br>journée en <span class="lime">croissance.</span></h1>
+    <p class="sub" style="text-align:center">Un coach dans ta poche qui sait, chaque matin, sur quoi tu dois bosser pour faire grossir ton business.</p>
+    <button class="btn btn-lime" style="margin-top:26px" data-go="promise">Commencer</button>
+  </section>
+
+  <!-- PROMISE -->
+  <section class="screen center" id="promise">
+    <div class="flex1"></div>
+    <div class="kick">La méthode Roize</div>
+    <h2 style="margin-top:14px;text-align:center">Tu as le potentiel.<br>Il te manque la méthode.</h2>
+    <p class="sub" style="text-align:center">Roize transforme ton ambition en une routine simple, jour après jour.</p>
+    <div class="card" style="margin-top:22px;text-align:left;width:100%;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:11px;align-items:flex-start"><svg viewBox="0 0 24 24" style="width:20px;height:20px;flex:none;stroke:var(--lime);fill:none;stroke-width:2;margin-top:1px"><path d="M5 12l5 5 9-10"/></svg><div style="font-size:14px;line-height:1.45">Chaque matin, <b>la bonne action</b> à faire. Pas une to-do de plus.</div></div>
+      <div style="display:flex;gap:11px;align-items:flex-start"><svg viewBox="0 0 24 24" style="width:20px;height:20px;flex:none;stroke:var(--lime);fill:none;stroke-width:2;margin-top:1px"><path d="M5 12l5 5 9-10"/></svg><div style="font-size:14px;line-height:1.45">Un <b>plan jour par jour</b> adapté à ton business et à ton temps.</div></div>
+      <div style="display:flex;gap:11px;align-items:flex-start"><svg viewBox="0 0 24 24" style="width:20px;height:20px;flex:none;stroke:var(--lime);fill:none;stroke-width:2;margin-top:1px"><path d="M5 12l5 5 9-10"/></svg><div style="font-size:14px;line-height:1.45">Ton <b>suivi de CA</b> en langage naturel, sans tableur.</div></div>
+    </div>
+    <div class="flex1"></div>
+    <button class="btn btn-lime" data-go="quiz">Démarrer mon profil</button>
+  </section>
+
+  <!-- QUIZ (dynamique, adaptatif) -->
+  <section class="screen" id="quiz">
+    <button class="btn btn-ghost" id="qback" style="display:none;width:auto;align-self:flex-start;padding:6px 2px;margin-bottom:6px;font-size:14px">← Retour</button>
+    <div class="prog"><i id="qbar" style="width:0%"></i></div>
+    <div class="kick" id="qcount" style="margin-top:16px">Question 1</div>
+    <h2 id="qtitle" style="margin-top:10px"></h2>
+    <div class="sub" id="qsub" style="display:none"></div>
+    <div id="qbody"></div>
+    <div class="flex1" style="min-height:14px"></div>
+    <button class="btn btn-ghost" id="qskip" style="display:none">Passer cette question</button>
+    <button class="btn btn-aurora" id="qnext" disabled style="opacity:.4">Continuer</button>
+  </section>
+
+  <!-- LOADING -->
+  <section class="screen center" id="loading">
+    <div class="spark" style="width:120px;height:120px"><div class="glow" style="width:110px;height:110px"></div><div class="core" style="width:30px;height:30px"></div></div>
+    <h2 style="margin-top:24px;text-align:center">Je calcule ton potentiel</h2>
+    <p class="sub" style="text-align:center">Je croise ton profil avec mes 7 modèles.</p>
+  </section>
+
+  <!-- REPORT -->
+  <section class="screen" id="report">
+    <div class="kick" style="margin-top:6px">Ton rapport</div>
+    <h2 style="margin-top:8px">Potentiel de <span class="lime">croissance</span></h2>
+    <div class="card" style="margin-top:16px;text-align:center">
+      <div class="gauge" style="width:170px;height:170px"><div class="ring" style="--p:78"></div><div class="hole"><div class="num" id="repScore">78</div><div class="lab">Potentiel / 100</div></div></div>
+      <div class="sub" id="repTop" style="margin-top:4px">Ton rapport est prêt.</div>
+      <div class="sub" style="font-size:12.5px;margin-top:10px;color:var(--t3)">Ce score mesure à quel point ce modèle colle à <b style="color:var(--t2)">ton</b> profil : ton temps, ton budget, tes compétences, ton objectif. Plus c'est haut, plus le démarrage est facile pour toi.</div>
+    </div>
+    <div id="repFit"></div>
+    <div class="curve">
+      <div class="hd"><span>Revenus projetés · 6 mois</span><span class="lime mono">actuel · Roize</span></div>
+      <svg viewBox="0 0 300 110" style="width:100%;height:100px">
+        <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(198,255,60,.35)"/><stop offset="1" stop-color="rgba(198,255,60,0)"/></linearGradient></defs>
+        <path d="M0 95 C60 90 120 80 180 60 C220 48 260 30 300 14 L300 110 L0 110 Z" fill="url(#ga)"/>
+        <path class="draw" d="M0 95 C60 90 120 80 180 60 C220 48 260 30 300 14" fill="none" stroke="#C6FF3C" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M0 98 C80 96 160 94 300 90" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-dasharray="4 5"/>
+        <circle cx="300" cy="14" r="4" fill="#C6FF3C"/>
+      </svg>
+    </div>
+    <div class="shock">
+      <div class="k">Concrètement, pour toi</div>
+      <div id="repProj" style="font-size:14.5px;line-height:1.5;margin-top:8px">—</div>
+    </div>
+    <div class="flex1" style="min-height:16px"></div>
+    <button class="btn btn-lime" data-go="match">Voir mes modèles</button>
+  </section>
+
+  <!-- MATCH -->
+  <section class="screen" id="match">
+    <div class="kick" style="margin-top:6px">Compatibilité · 7 modèles</div>
+    <h2 style="margin-top:8px">Tes meilleurs modèles</h2>
+    <div id="matchList"></div>
+    <div class="flex1" style="min-height:16px"></div>
+    <button class="btn btn-lime" data-go="plan">Construire mon plan</button>
+  </section>
+
+  <!-- PLAN -->
+  <section class="screen" id="plan">
+    <div class="kick" style="margin-top:6px">Ton plan · Semaine 1</div>
+    <h2 style="margin-top:8px">Tes 3 premières actions</h2>
+    <div id="planActs"></div>
+    <div class="kick" style="margin-top:22px">Où ça te mène, concrètement</div>
+    <div id="planTimeline" style="margin-top:12px"></div>
+    <div class="flex1" style="min-height:16px"></div>
+    <button class="btn btn-lime" data-go="home">Démarrer ma 1re journée</button>
+  </section>
+
+  <!-- PAYWALL -->
+  <section class="screen" id="paywall">
+    <h2 style="margin-top:8px;text-align:center">Tout Roize,<br>pour toi.</h2>
+    <div style="display:flex;gap:12px;margin-top:18px">
+      <div class="card" style="flex:1;padding:14px"><div class="kick" style="font-size:10px">Sans</div><svg viewBox="0 0 120 40" style="width:100%;height:36px;margin-top:6px"><path d="M0 28 C40 27 80 26 120 25" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/></svg></div>
+      <div class="card" style="flex:1;padding:14px;border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box"><div class="kick" style="font-size:10px;color:var(--lime)">Avec Roize</div><svg viewBox="0 0 120 40" style="width:100%;height:36px;margin-top:6px"><path d="M0 34 C40 30 80 16 120 4" fill="none" stroke="#C6FF3C" stroke-width="2.5"/></svg></div>
+    </div>
+    <div class="card" style="margin-top:22px;text-align:center;padding:20px 18px">
+      <div style="font-size:30px">🎁</div>
+      <div style="font-weight:700;font-size:16.5px;margin-top:8px">Gratuit pendant la bêta</div>
+      <div class="sub" style="font-size:13.5px;margin-top:6px">Tu as accès à tout : le plan jour par jour, le Cerveau, le coach et le suivi. On construit Roize avec ses premiers utilisateurs.</div>
+    </div>
+    <div class="flex1"></div>
+    <button class="btn btn-lime" style="margin-top:18px" data-go="home">Continuer, c'est gratuit</button>
+  </section>
+
+  <!-- HOME (deux états : empty "Me lancer" / dashboard projet) -->
+  <section class="screen" id="home">
+    <!-- ÉTAT 1 : pas de projet -->
+    <div id="homeEmpty" style="display:none;flex-direction:column;flex:1">
+      <div class="flex1"></div>
+      <div class="empty-hero"><div class="eg"></div><div class="ec"></div></div>
+      <h1 style="text-align:center;margin-top:8px">Lance ton projet.<br>Un jour à la <span class="lime">fois.</span></h1>
+      <p class="sub" style="text-align:center">Dis-moi ton objectif, je te construis un plan jour par jour. Tu coches, tu avances.</p>
+      <div class="flex1"></div>
+      <button class="btn btn-lime" id="launchBtn">Me lancer</button>
+      <div class="flex1" style="max-height:30px"></div>
+    </div>
+    <!-- ÉTAT 2 : dashboard projet -->
+    <div id="homeDash" style="display:none;flex-direction:column;flex:1">
+      <div class="pj-head">
+        <div>
+          <div class="pj-day">Jour <span id="dDay">1</span> <small>/ <span id="dTot">90</span></small></div>
+          <div class="pj-biz" id="dBiz">—</div>
+        </div>
+        <span class="streak" id="dStreak">◆ 1</span>
+      </div>
+      <div class="prog" style="margin-top:14px"><i id="dGlobalProg" style="width:0%"></i></div>
+      <div class="pj-meta">
+        <div class="pj-pill"><div class="pv" id="dPctV">0%</div><div class="pl">avancement</div></div>
+        <div class="pj-pill"><div class="pv" id="dLeftV">90</div><div class="pl">jours restants</div></div>
+        <div class="pj-pill"><div class="pv" id="dStreakV">1</div><div class="pl">jours de série</div></div>
+      </div>
+      <div id="dCoachCard" style="margin-top:14px"></div>
+      <div class="vsel" id="dViewSel">
+        <button data-view="day" class="on">Jour</button>
+        <button data-view="week">Semaine</button>
+        <button data-view="month">Mois</button>
+        <button data-view="total">Total</button>
+      </div>
+      <div id="dBody" style="display:flex;flex-direction:column;flex:1"></div>
+    </div>
+  </section>
+
+  <!-- FLUX "ME LANCER" -->
+  <section class="screen" id="launch">
+    <button class="btn btn-ghost" id="lBack" style="width:auto;align-self:flex-start;padding:6px 2px;margin-bottom:6px;font-size:14px">← Retour</button>
+    <div class="prog"><i id="lBar" style="width:25%"></i></div>
+    <div class="kick" id="lCount" style="margin-top:16px">Étape 1 / 4</div>
+
+    <!-- étape a : durée -->
+    <div class="lstep on" data-step="0">
+      <h2 style="margin-top:10px">Tu te lances sur<br>combien de temps ?</h2>
+      <div class="gridopts" id="lDur">
+        <button class="bigopt" data-v="30"><span class="bv">30</span><span class="bl">jours · sprint</span></button>
+        <button class="bigopt" data-v="60"><span class="bv">60</span><span class="bl">jours · solide</span></button>
+        <button class="bigopt" data-v="90"><span class="bv">90</span><span class="bl">jours · transfo</span></button>
+        <button class="bigopt" data-v="custom"><span class="bv">＋</span><span class="bl">sur-mesure</span></button>
+      </div>
+      <input id="lDurCustom" class="txt" type="number" min="7" max="365" placeholder="Nombre de jours (7 à 365)" style="display:none"/>
+    </div>
+
+    <!-- étape b : heures/jour -->
+    <div class="lstep" data-step="1">
+      <h2 style="margin-top:10px">Combien d'heures<br>par jour, vraiment ?</h2>
+      <div class="gridopts" id="lHpd">
+        <button class="bigopt" data-v="1"><span class="bv">1h</span><span class="bl">à côté du reste</span></button>
+        <button class="bigopt" data-v="2"><span class="bv">2h</span><span class="bl">sérieux</span></button>
+        <button class="bigopt" data-v="3"><span class="bv">3h</span><span class="bl">engagé</span></button>
+        <button class="bigopt" data-v="4"><span class="bv">4h+</span><span class="bl">à fond</span></button>
+      </div>
+    </div>
+
+    <!-- étape c : compétences -->
+    <div class="lstep" data-step="2">
+      <h2 style="margin-top:10px">Tu sais déjà<br>faire quoi ?</h2>
+      <div class="sub" style="margin-top:8px">Plusieurs choix. On adapte les tâches.</div>
+      <div class="opts" id="lSkills" style="margin-top:18px"></div>
+    </div>
+
+    <!-- étape d : business -->
+    <div class="lstep" data-step="3">
+      <h2 style="margin-top:10px">Ton terrain<br>de jeu ?</h2>
+      <div class="sub" style="margin-top:8px">Ton modèle. Pré-rempli selon ton profil.</div>
+      <div class="opts" id="lBiz" style="margin-top:18px"></div>
+    </div>
+
+    <div class="flex1" style="min-height:14px"></div>
+    <button class="btn btn-lime" id="lNext" disabled style="opacity:.4">Continuer</button>
+  </section>
+
+  <!-- LAUNCH LOADING -->
+  <section class="screen center" id="launchLoad">
+    <div class="spark" style="width:120px;height:120px"><div class="glow" style="width:110px;height:110px"></div><div class="core" style="width:30px;height:30px"></div></div>
+    <h2 style="margin-top:24px;text-align:center">Je construis ton plan</h2>
+    <p class="sub" id="lLoadSub" style="text-align:center">Je découpe ton objectif en jours…</p>
+  </section>
+
+  <!-- CERVEAU (dynamique : score motivation = exécution × train de vie) -->
+  <section class="screen" id="cerveau">
+    <div class="kick" style="margin-top:6px">Ton cerveau Roize</div>
+    <div class="gauge" id="brainGauge" style="width:186px;height:186px;margin:16px auto 0;flex:none"><div class="ring" style="--p:0"></div><div class="hole"><div class="num" id="brainNum">0</div><div class="lab">Motivation</div></div></div>
+    <h2 id="brainLabel" style="margin-top:14px;text-align:center">En veille</h2>
+    <p class="sub" id="brainMsg" style="text-align:center;margin-top:6px">Coche ce qui a nourri ta journée, ton cerveau s'allume.</p>
+    <div id="brainLevel" style="text-align:center;margin-top:8px;font-family:'Geist Mono';font-size:11.5px;color:var(--t3);letter-spacing:.3px"></div>
+
+    <div class="card" style="margin-top:18px;width:100%;text-align:left">
+      <div class="kick" style="margin-bottom:2px">Ce qui a nourri ton cerveau</div>
+      <div class="feed" id="feed"></div>
+    </div>
+    <div id="slumpCard" style="width:100%"></div>
+
+    <div class="card spk" style="margin-top:14px;width:100%">
+      <div class="hd"><span>Régularité · 7 jours</span><span class="lime mono" id="brainReg">·</span></div>
+      <svg viewBox="0 0 300 70" style="width:100%;height:64px"><path id="brainCurve" class="draw" d="M10 50 L55 44 L100 48 L145 34 L190 40 L235 24 L280 30" fill="none" stroke="#C6FF3C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle id="brainCurveDot" cx="280" cy="30" r="4" fill="#C6FF3C"/></svg>
+      <div style="display:flex;justify-content:space-between;font-family:'Geist Mono';font-size:11px;color:var(--t3);margin-top:4px"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    </div>
+    <div class="stats" style="width:100%">
+      <div class="stat"><div class="v" id="brainActions">0</div><div class="l">actions terminées</div></div>
+      <div class="stat"><div class="v l" id="brainStreak">1</div><div class="l">jours de série</div></div>
+    </div>
+    <div class="flex1"></div>
+  </section>
+
+  <!-- COACH : cale la journée (matin, conversationnel léger) -->
+  <section class="screen" id="coach">
+    <button class="btn btn-ghost" id="coachBack" style="width:auto;align-self:flex-start;padding:6px 2px;margin-bottom:2px;font-size:14px">← Retour</button>
+    <div class="kick">Roize Bot · ton coach</div>
+    <div id="coachFocus"></div>
+    <div class="chat" id="coachChat" style="flex:1;min-height:0;margin-top:10px"></div>
+    <div id="coachValidate"></div>
+    <div class="chatbar" style="padding-top:8px"><input id="coachIn" placeholder="Écris une tâche que tu veux faire…"/><button class="send" id="coachSend">↑</button></div>
+  </section>
+
+  <!-- SUIVI : dashboard + log en langage naturel -->
+  <section class="screen" id="suivi">
+    <div class="kick" style="margin-top:6px">Suivi</div>
+    <h2 style="margin-top:6px">Ton business en chiffres.</h2>
+    <div id="suiviBody" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:14px -2px 0;padding:0 2px"></div>
+    <div id="logConfirm" class="logconfirm" style="display:none"></div>
+    <div class="chatbar" style="padding-top:8px"><input id="logIn" placeholder="Dis ce qui s'est passé… ex : signé un client à 200€"/><button class="send" id="logSend">↑</button></div>
+  </section>
+
+  <!-- PROFIL -->
+  <section class="screen" id="profil">
+    <div style="display:flex;align-items:center;gap:14px;margin-top:8px">
+      <span style="width:56px;height:56px;border-radius:18px;background:var(--aurora);flex:none;box-shadow:0 10px 30px -8px rgba(139,60,255,.6)"></span>
+      <div><h2 style="font-size:23px">Ton profil</h2><div class="mono" style="font-size:12px;color:var(--t3);margin-top:2px" id="profBiz">—</div></div>
+    </div>
+    <div class="stats" style="width:100%;margin-top:20px">
+      <div class="stat"><div class="v l mono" id="profStreak">1</div><div class="l">jours de série</div></div>
+      <div class="stat"><div class="v mono" id="profBrain">62</div><div class="l">score cerveau</div></div>
+    </div>
+    <div id="acctBox" style="width:100%;margin-top:20px"></div>
+    <div class="kick" style="margin-top:24px">Réglages</div>
+    <button class="prow"><span class="pic"><svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1l-.4-2.6H10.5l-.4 2.6a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.4 2.6h3.5l.4-2.6a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5a7 7 0 0 0 .1-1z"/></svg></span>Mon objectif & mon profil<span class="pchev">›</span></button>
+    <button class="prow"><span class="pic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>Notifications<span class="pchev">›</span></button>
+    <button class="prow" data-go="paywall"><span class="pic"><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/></svg></span>Abonnement<span class="pchev">›</span></button>
+    <button class="prow"><span class="pic"><svg viewBox="0 0 24 24"><path d="M12 17v.01M12 13a2 2 0 0 0 2-2 2 2 0 1 0-4 0M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z"/></svg></span>Signaler un bug ou une idée<span class="pchev">›</span></button>
+    <div class="kick" style="margin-top:24px">Thème</div>
+    <div class="vsel" id="themeSel" style="margin-top:10px">
+      <button data-theme="dark" class="on">Sombre</button>
+      <button data-theme="light">Clair</button>
+    </div>
+    <div class="flex1"></div>
+    <div style="text-align:center;color:var(--faint);font-size:11px;font-family:'Geist Mono';letter-spacing:.5px;padding:10px 0">Roize · v1.0</div>
+  </section>
+
+  <!-- TAB BAR -->
+  <nav class="tabbar" id="tabbar" style="display:none">
+    <div class="tab on" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5M5 9.5V21h14V9.5"/></svg></div>
+    <div class="tab" data-tab="cerveau"><svg viewBox="0 0 24 24"><path d="M12 3l8 5v8l-8 5-8-5V8z"/></svg></div>
+    <div class="tab" data-tab="suivi"><svg viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20v-7M21 20H3"/></svg></div>
+    <div class="tab" data-tab="profil"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 21c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></div>
+  </nav>
+
+  <div class="confetti" id="confetti"></div>
+  <div class="toast" id="toast"></div>
+  <div class="sheet" id="tipSheet"><div class="sheetcard">
+    <div class="kick">Astuce de pro</div>
+    <div id="tipTx" style="font-size:14.5px;line-height:1.6;margin-top:10px"></div>
+    <div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-aurora" id="tipMore" style="padding:13px;flex:1">Une autre</button><button class="btn btn-lime" id="tipClose" style="padding:13px;flex:1">OK</button></div>
+  </div></div>
+  <div class="sheet" id="execSheet"><div class="sheetcard">
+    <div class="kick">✨ Roize l'a fait pour toi</div>
+    <div id="execBody" style="font-size:14px;line-height:1.55;margin-top:10px;white-space:pre-wrap;max-height:44vh;overflow-y:auto"></div>
+    <div id="execYours" style="font-size:13px;color:var(--lime);margin-top:12px;font-weight:600"></div>
+    <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-aurora" id="execCopy" style="padding:13px;flex:1">Copier</button><button class="btn btn-lime" id="execClose" style="padding:13px;flex:1">OK</button></div>
+  </div></div>
+  <div class="sheet" id="fbSheet"><div class="sheetcard">
+    <div class="kick">Aide-moi à améliorer Roize</div>
+    <div class="vsel" id="fbType" style="margin-top:12px">
+      <button data-fb="bug" class="on">🐞 Un bug</button>
+      <button data-fb="idea">💡 Une idée</button>
+    </div>
+    <textarea id="fbText" maxlength="600" placeholder="Décris le bug ou ton idée, le plus précis possible…" style="width:100%;margin-top:12px;min-height:96px;background:var(--s1);border:1px solid var(--line2);border-radius:14px;color:var(--txt);padding:12px;font-family:inherit;font-size:14px;line-height:1.4;resize:none"></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-ghost" id="fbCancel" style="padding:13px;flex:1">Annuler</button><button class="btn btn-lime" id="fbSend" style="padding:13px;flex:1">Envoyer</button></div>
+  </div></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const APP=['home','cerveau','suivi','profil'];
+const S={ans:{skills:[]},fi:0,brain:62,done:2,checkin:{food:false,sport:false,sleep:false,hydra:false,mind:false},ranked:[],chosen:null,idx:0,dayDone:0,streak:1,freezes:1,totalActions:0,feats:[],tipI:0,profiled:false,project:null,view:'day',logs:[],goalAmt:null,checkinDate:null,theme:'dark',account:null,coach:{palier:null,critere:null,bottleneck:null,phase:null,pourquoi:null,diagDate:null,metaShownDate:null,journal:[],skips:[],profile:null,profileDone:false}};
+
+/* ---------- 7 MODÈLES + SCORING ---------- */
+const MODULES={
+  M1:{name:"Achat-revente malin",rev:"300–1 500 € / mois",delay:"2–6 sem.",
+     why:"Démarrage à 0€, cash rapide, parfait pour apprendre à vendre sans risque.",
+     actions:["Choisir 1 catégorie rentable (sneakers, jeux, déco…) + 3 références qui se revendent bien","Repérer 5 annonces sous-cotées sur Vinted/LBC aujourd'hui","Faire ta 1re offre d'achat sur la meilleure","Lister tes 5 premiers articles avec un prix cible","Publier ta 1re annonce de revente"]},
+  M2:{name:"Boutique en ligne",rev:"500–4 000 € / mois",delay:"1–3 mois",
+     why:"Fort potentiel de scale, idéal si tu as du budget et du temps pour tester des produits.",
+     actions:["Choisir 1 niche + 1 produit gagnant (3 critères)","Créer ta boutique : nom + 1 page produit","Trouver 1 fournisseur fiable","Écrire la fiche produit qui vend","Lancer ta 1re créa pub (15€ de test)"]},
+  M3:{name:"Vendre ton savoir",rev:"800–3 000 € / mois",delay:"3–6 sem.",
+     why:"Marge maximale, zéro stock. Ton expertise = le chemin le plus direct.",
+     actions:["Identifier le problème que tu résous, en 1 phrase","Valider ton idée avec 5 personnes","Créer le plan de ta 1re offre","Écrire ta page de vente en 1h","Pré-vendre à 3 personnes avant de tout créer"]},
+  M4:{name:"Prestation de services",rev:"1 000–4 000 € / mois",delay:"1–4 sem.",
+     why:"Le plus rapide pour générer du cash : tu vends une compétence, sans investissement.",
+     actions:["Définir ton offre claire : qui + quoi + résultat","Fixer ton tarif","Lister 20 prospects qui ont ce besoin","Envoyer 5 messages de prospection","Caler ton 1er appel découverte"]},
+  M5:{name:"Créateur & monétisation",rev:"500–5 000 € / mois",delay:"2–4 mois",
+     why:"Construit un actif durable. Idéal si tu aimes créer et as (ou veux) une audience.",
+     actions:["Choisir ta niche + ton angle unique","Définir 3 piliers de contenu","Créer 3 contenus pour cette semaine","Publier ton 1er contenu aujourd'hui","Analyser ce qui performe + doubler dessus"]},
+  M6:{name:"Business de proximité",rev:"800–3 500 € / mois",delay:"1–3 sem.",
+     why:"Demande locale forte, peu de concurrence en ligne. Parfait avec un savoir-faire manuel.",
+     actions:["Choisir ton service + ta zone","Créer ton offre + ton prix","T'inscrire sur 2 plateformes (ou flyers)","Contacter 10 prospects locaux","Décrocher ta 1re mission test"]},
+  M7:{name:"Produit digital / app",rev:"0–6 000 € / mois",delay:"2–5 mois",
+     why:"Le plus scalable. Pour les profils tech, patients, prêts à construire un vrai produit.",
+     actions:["Trouver 1 problème récurrent que tu peux outiller","Valider avec 5 utilisateurs cibles","Maquetter l'outil (no-code) en 1 écran","Construire le MVP minimal (1 fonction)","Mettre en ligne + récupérer 3 retours"]}
+};
+const CAP={M1:[3,3,2,1],M2:[0,2,3,3],M3:[3,3,3,2],M4:[3,3,2,1],M5:[3,3,2,1],M6:[3,3,2,1],M7:[1,2,3,3]};
+const TIMEM={M1:[3,2,1,1],M2:[0,1,3,3],M3:[1,2,3,3],M4:[0,2,3,3],M5:[1,2,3,3],M6:[2,3,3,2],M7:[0,0,2,3]};
+const RISK={M1:[3,2,1],M2:[1,2,3],M3:[2,3,3],M4:[3,3,2],M5:[2,2,2],M6:[3,2,1],M7:[0,1,3]};
+const SKILL={write:["M3","M5"],video:["M5"],code:["M7"],sell:["M1","M2","M4"],teach:["M3","M4"],mkt:["M2","M3","M5"],manual:["M6"]};
+function skillScore(m,sk){let s=0;if(sk.includes("none"))s=(m==="M1")?1:0;sk.forEach(k=>{if(SKILL[k]&&SKILL[k].includes(m))s+=2;});return Math.min(3,s);}
+function audScore(m,i){if(i===4)return(m==="M6"||m==="M4")?2:0;if(m==="M5")return[0,1,2,3][i]||0;if(m==="M3")return[0,0,2,3][i]||0;return 0;}
+function objScore(m,i){if(i>=2)return(["M2","M3","M7"].includes(m))?2.5:1.5;return(["M1","M4","M6"].includes(m))?2.5:1.5;}
+const MASTERED=['M1','M2','M3']; // beta : on ne coache QUE ces 3 modèles maîtrisés (Vinted / e-com / formation-digital)
+// projections RÉALISTES par modèle (issues des playbooks) — pour le Rapport + le Plan
+const PROJ={
+  M1:{first:"tes 1res reventes en quelques jours",m3:"300–600€/mois",y1:"1 000–2 000€/mois",vision:"un vrai revenu en plus, ou le tremplin vers ta boutique"},
+  M2:{first:"ta 1re vente en 2 à 4 semaines",m3:"500–2 000€/mois",y1:"3 000–8 000€/mois",vision:"une marque qui tourne (presque) sans toi"},
+  M3:{first:"ton 1er client payant en ~2 semaines (en pré-vente)",m3:"500–1 500€/mois",y1:"2 000–6 000€/mois",vision:"un revenu récurrent en vendant ton savoir"}
+};
+function projOf(){return PROJ[S.chosen]||PROJ.M3;}
+function scoreModules(a){
+  const out=[];
+  for(const m in MODULES){
+    const cap=CAP[m][a.capital]??1,ti=TIMEM[m][a.time]??1,sk=skillScore(m,a.skills||[]),ri=RISK[m][a.risk]??1,au=audScore(m,a.audience),ob=objScore(m,a.goal);
+    out.push({m,tot:cap*.20+ti*.20+sk*.25+ri*.15+au*.10+ob*.10});
+  }
+  const boost=(id,v)=>{const o=out.find(x=>x.m===id);if(o)o.tot+=v;};
+  if(a.capital===0&&a.time===0)boost("M1",1.2);
+  if((a.skills||[]).includes("code")&&a.risk===2&&a.time===3)boost("M7",1.0);
+  if(a.audience===3){boost("M5",.8);boost("M3",.8);}
+  if((a.skills||[]).includes("manual"))boost("M6",.7);
+  out.sort((x,y)=>y.tot-x.tot);
+  return out.filter(o=>MASTERED.includes(o.m)).map(o=>({m:o.m,score:Math.max(46,Math.min(97,Math.round(o.tot/3*100)))}));
+}
+function fitCheck(a){
+  const amb=a.goal>=2,noTime=a.time===0,noMoney=a.capital===0,noSkill=(a.skills||[]).includes("none");
+  if(amb&&noTime&&(noMoney||noSkill))return"hard";
+  if(amb&&(noTime||noSkill))return"soft";
+  return"ok";
+}
+function fitBannerHTML(lvl){
+  if(lvl==="hard")return '<div class="fitb hard"><b>Roize est cash avec toi.</b> Viser gros avec très peu de temps, sans budget ni compétence de départ, ce n\'est pas réaliste. <b>Mais</b> si tu t\'y mets pour de vrai : commence petit, prouve-toi 1 mois sur le modèle le plus accessible. Tu tiens, on t\'emmène loin.</div>';
+  if(lvl==="soft")return '<div class="fitb soft"><b>Honnête :</b> ton objectif est ambitieux vu ton temps et tes ressources. C\'est jouable, mais pose d\'abord des bases solides. Roize te cadre pour ça, jour après jour.</div>';
+  return "";
+}
+
+/* ---------- QUIZ ADAPTATIF (flow conditionnel) ---------- */
+function hasBiz(a){return a.sit==='S1'||a.sit==='S2'||a.sit==='S3'||a.sit==='S4';}
+function famA(a){return a.sit==='S0'||(a.sit==='S1'&&a.doubt==='oui');}
+function famB(a){return hasBiz(a)&&!famA(a);}
+const FLOW=[
+  // Q1 — palier (escalier du revenu)
+  {id:"sit",q:()=>"Où en es-tu, concrètement ?",sub:"On adapte tout le parcours à ton niveau.",type:"single",opts:[
+    {head:"Débutant"},
+    {label:"Je veux me lancer (pas encore commencé)",v:"S0"},
+    {label:"Je suis lancé, mais 0€ pour l'instant",v:"S1"},
+    {head:"Intermédiaire / confirmé"},
+    {label:"J'ai gagné mes premiers euros (ponctuel)",v:"S2"},
+    {label:"Je gagne régulièrement (quelques centaines €/mois)",v:"S3"},
+    {label:"J'en tire un revenu récurrent / un salaire",v:"S4"}]},
+  // S1 — routage : garde son business ou doute
+  {id:"doubt",showIf:a=>a.sit==="S1",q:()=>"Ton business actuel, tu le sens ?",type:"single",opts:[
+    {label:"Oui, je veux le faire décoller",v:"non"},
+    {label:"Bof, j'hésite / je doute du choix",v:"oui"}]},
+
+  // ===== FAMILLE A — DÉCOUVRIR (S0, ou S1 qui doute) =====
+  {id:"block",showIf:a=>a.sit==="S0",q:()=>"C'est quoi ton blocage principal ?",type:"single",opts:[
+    {label:"Je ne sais pas quoi vendre / quel business",v:"quoi"},
+    {label:"Je sais quoi faire, mais pas par où commencer",v:"start"},
+    {label:"Je manque de temps",v:"temps"},
+    {label:"J'ai peur de l'échec / du regard des autres",v:"peur"}]},
+  {id:"access",showIf:a=>a.sit==="S0"&&a.block==="quoi",q:()=>"Tu as déjà un atout pour démarrer ?",type:"single",opts:[
+    {label:"Une compétence (service, design, écriture…)",v:"skill"},
+    {label:"Un accès produits (fournisseur, Vinted…)",v:"prod"},
+    {label:"Rien de précis, propose-moi des pistes",v:"none"}]},
+  {id:"words",showIf:a=>famA(a),type:"text3",
+    q:()=>"Ton idée / envie de business, en 3 mots :",ph:"liberté · ventes · voyage"},
+  {id:"skills",showIf:a=>famA(a),type:"multi",max:3,q:()=>"Ce que tu sais déjà faire :",sub:"jusqu'à 3 choix",opts:[
+    {label:"Écrire / créer du contenu",v:"write"},{label:"Vidéo / photo",v:"video"},{label:"Coder",v:"code"},{label:"Vendre / négocier",v:"sell"},{label:"Enseigner / coacher",v:"teach"},{label:"Marketing / réseaux",v:"mkt"},{label:"Manuel / local",v:"manual"},{label:"Autre",v:"autre"},{label:"Rien de précis",v:"none"}]},
+  {id:"capital",showIf:a=>famA(a),q:()=>"Quel budget pour démarrer ?",type:"single",opts:[
+    {label:"0€",v:0},{label:"100 à 500€",v:1},{label:"500 à 2 000€",v:2},{label:"2 000€ et +",v:3}]},
+
+  // ===== FAMILLE B — FAIRE GROSSIR (S1 ok, S2, S3, S4) =====
+  {id:"bizdesc",showIf:a=>famB(a),type:"text3",maxlen:80,
+    q:()=>"C'est quoi ton business, en une phrase ?",ph:"ex : je revends des sneakers sur Vinted"},
+  {id:"cat",showIf:a=>famB(a),other:true,otherPh:"Dis-nous ton activité…",q:a=>a._catAuto?"On a compris, confirme ou corrige :":"Ton business, c'est plutôt :",type:"single",opts:[
+    {label:"Achat-revente (Vinted, LBC…)",v:"M1"},
+    {label:"E-commerce / boutique",v:"M2"},
+    {label:"Formation / infoproduit / produit digital",v:"M3"},
+    {label:"Autre (pas encore couvert par Roize)",v:"autre"}]},
+  {id:"revenue",showIf:a=>a.sit==="S3"||a.sit==="S4",q:()=>"Tu génères combien par mois, environ ?",type:"single",opts:[
+    {label:"Moins de 100€",v:0},{label:"100 à 500€",v:1},{label:"500 à 2 000€",v:2},{label:"2 000€ et +",v:3}]},
+  {id:"frein",showIf:a=>famB(a),other:true,otherPh:"Précise ton frein…",q:()=>"Ton principal frein en ce moment ?",type:"single",opts:a=>{
+    let o;
+    if(a.sit==="S1")o=[{label:"Pas assez de visibilité",v:"visi"},{label:"Des prospects, mais personne n'achète",v:"vente"},{label:"Pas régulier, je procrastine",v:"regul"},{label:"Mon offre n'est pas assez claire",v:"offre"}];
+    else if(a.sit==="S2")o=[{label:"Mon offre n'est pas assez claire",v:"offre"},{label:"Pas assez de clients",v:"acq"},{label:"Trop irrégulier, je procrastine",v:"regul"},{label:"Mes prix sont trop bas",v:"prix"}];
+    else if(a.sit==="S3")o=[{label:"Acquisition / visibilité",v:"acq"},{label:"Je suis au max de mon temps",v:"temps"},{label:"Rien n'est systématisé",v:"systeme"},{label:"Mes prix sont trop bas",v:"prix"}];
+    else o=[{label:"Tout repose sur moi",v:"systeme"},{label:"J'ai besoin de déléguer",v:"delegue"},{label:"Trouver de nouveaux canaux",v:"canaux"},{label:"Lancer une nouvelle offre",v:"offre"}];
+    return o.concat([{label:"Autre",v:"autre"}]);
+  }},
+
+  // ===== COMMUN (tous les paliers) =====
+  {id:"audience",q:()=>"Tu as déjà une audience / communauté ?",type:"single",opts:[
+    {label:"Pas ou très peu",v:0},
+    {label:"Quelques centaines",v:2},
+    {label:"Des milliers et +",v:3}]},
+  {id:"engage",q:()=>"Tu t'engages sur combien de temps ?",sub:"On bâtit ton plan sur cette durée.",type:"single",opts:[
+    {label:"4 semaines · sprint",v:28},
+    {label:"8 semaines · solide",v:56},
+    {label:"12 semaines · transformation",v:84},
+    {label:"6 mois · long terme",v:180}]},
+  {id:"time",q:()=>"En vrai, tu peux y mettre combien par jour ?",sub:"Sois honnête, on cale les missions là-dessus.",type:"single",opts:[
+    {label:"Moins d'1h",v:0},{label:"1 à 2h",v:1},{label:"2 à 3h",v:2},{label:"3h et +",v:3}]},
+  {id:"goal",showIf:a=>famA(a),q:()=>"Ton objectif dans 6 mois ?",type:"single",opts:[
+    {label:"Mes premiers 500€/mois",v:0},{label:"1 500€/mois",v:1},{label:"3 000€/mois",v:2},{label:"5 000€/mois et +",v:3}]},
+  {id:"goal",showIf:a=>famB(a),q:()=>"Ton objectif maintenant ?",type:"single",opts:[
+    {label:"+50% de CA",v:2},{label:"Doubler mon CA",v:3},{label:"Scaler (×3 et +)",v:3},{label:"Stabiliser & automatiser",v:1}]}
+];
+function applies(q){return !q.showIf||q.showIf(S.ans);}
+function renderQ(){
+  while(S.fi<FLOW.length&&!applies(FLOW[S.fi]))S.fi++;
+  if(S.fi>=FLOW.length){finishQuiz();return;}
+  const q=FLOW[S.fi],appl=FLOW.filter(applies),pos=appl.indexOf(q);
+  $('#qback').style.display=pos>0?'inline-flex':'none';
+  $('#qbar').style.width=Math.round(pos/appl.length*100)+'%';
+  $('#qcount').textContent='Question '+(pos+1)+' / ~'+Math.max(appl.length,8);
+  $('#qtitle').textContent=(typeof q.q==='function')?q.q(S.ans):q.q;
+  const sub=$('#qsub');if(q.sub){sub.textContent=q.sub;sub.style.display='block';}else sub.style.display='none';
+  const body=$('#qbody');body.innerHTML='';
+  const next=$('#qnext');next.disabled=true;next.style.opacity=.4;
+  if(q.type==='text3'){
+    const inp=document.createElement('input');inp.className='txt';inp.placeholder=q.ph||'';inp.maxLength=q.maxlen||40;inp.value=S.ans[q.id]||'';
+    inp.addEventListener('input',()=>{S.ans[q.id]=inp.value.trim();if(q.id==='bizdesc')S.ans._catAuto=false;const ok=inp.value.trim().length>=2;next.disabled=!ok;next.style.opacity=ok?1:.4;});
+    body.appendChild(inp);if(S.ans[q.id]){next.disabled=false;next.style.opacity=1;}setTimeout(()=>inp.focus(),250);
+  }else{
+    const wrap=document.createElement('div');wrap.className='opts';
+    const OPTS=(typeof q.opts==='function')?q.opts(S.ans):(q.opts||[]);
+    OPTS.forEach(o=>{
+      if(o.head){const hd=document.createElement('div');hd.className='kick';hd.style.cssText='margin:16px 0 6px 2px';hd.textContent=o.head;wrap.appendChild(hd);return;}
+      const b=document.createElement('button');b.className='opt';b.type='button';
+      b.innerHTML='<span>'+o.label+'</span><span class="chk"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>';
+      b.addEventListener('click',()=>{
+        if(q.type==='multi'){
+          const arr=S.ans.skills,i=arr.indexOf(o.v);
+          if(i>-1){arr.splice(i,1);b.classList.remove('sel');}else{if(arr.length>=(q.max||3))return;arr.push(o.v);b.classList.add('sel');}
+          const ok=arr.length>0;next.disabled=!ok;next.style.opacity=ok?1:.4;
+          if(q.id==='skills'){const oi=$('#qOther');if(oi)oi.style.display=arr.includes('autre')?'block':'none';}
+        }else{wrap.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');S.ans[q.id]=o.v;next.disabled=false;next.style.opacity=1;if(q.other){const oi=$('#qOther');if(oi)oi.style.display=o.v==='autre'?'block':'none';}}
+      });
+      if(q.type==='multi'&&S.ans.skills.includes(o.v))b.classList.add('sel');
+      if(q.type!=='multi'&&S.ans[q.id]===o.v)b.classList.add('sel');
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+    if(q.id==='skills'||q.other){
+      const oi=document.createElement('input');oi.className='txt';oi.id='qOther';oi.placeholder=q.otherPh||'Précise ta compétence';oi.maxLength=60;oi.value=S.ans[q.id+'Other']||'';
+      const showIt=(q.type==='multi')?(S.ans.skills||[]).includes('autre'):(S.ans[q.id]==='autre');
+      oi.style.cssText='margin-top:12px;display:'+(showIt?'block':'none');
+      oi.addEventListener('input',()=>{S.ans[q.id+'Other']=oi.value.trim();});
+      body.appendChild(oi);
+    }
+    if(q.type==='multi'&&S.ans.skills.length){next.disabled=false;next.style.opacity=1;}
+    if(q.type!=='multi'&&S.ans[q.id]!==undefined){next.disabled=false;next.style.opacity=1;}
+  }
+}
+function advance(){S.fi++;while(S.fi<FLOW.length&&!applies(FLOW[S.fi]))S.fi++;if(S.fi>=FLOW.length){finishQuiz();return;}renderQ();}
+function goBack(){let i=S.fi-1;while(i>=0&&!applies(FLOW[i]))i--;if(i<0)return;S.fi=i;renderQ();}
+function finishQuiz(){
+  const a=S.ans;
+  if(a.goal===undefined)a.goal=(a.sit==='S3'||a.sit==='S4')?2:0;
+  // l'"Autre + précise" (catégorie/frein) devient de la matière pour le coach
+  if(a.cat==='autre'&&a.catOther&&!a.bizdesc)a.bizdesc=a.catOther;
+  if(a.frein==='autre'&&a.freinOther)a.frein=a.freinOther;
+  if(!a.words&&a.bizdesc)a.words=a.bizdesc;
+  if(a.capital===undefined)a.capital=0;
+  if(a.time===undefined)a.time=1;
+  if(a.engage===undefined)a.engage=84;
+  a.risk=(a.block==='peur')?0:(a.goal>=2?2:1);
+  S.ranked=scoreModules(a);
+  if(a.cat){const idx=S.ranked.findIndex(x=>x.m===a.cat);if(idx>0){const it=S.ranked.splice(idx,1)[0];it.score=Math.max(it.score,90);S.ranked.unshift(it);}}
+  S.chosen=S.ranked[0].m;S.profiled=true;saveState();
+  show('loading');clearTimeout(lt);lt=setTimeout(()=>show('report'),2200);
+}
+
+/* ---------- REPORT / MATCH / PLAN ---------- */
+function esc(s){return (s||'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));}
+function matchCard(r,i,sel){
+  const M=MODULES[r.m],p=r.score;
+  const selcss=sel?';border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box':'';
+  return '<div class="rcard card'+(sel?' top':'')+'" data-m="'+r.m+'" style="cursor:pointer;margin-top:'+(i?12:14)+'px'+selcss+'">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="mono" style="color:var(--t3);font-size:12px">N°'+(i+1)+(i===0?' · conseillé':'')+'</span>'
+    +'<span class="mono '+(sel?'lime':'')+'" style="font-size:20px;font-weight:700"><b class="scoreN" data-to="'+p+'" style="font-weight:inherit">0</b>/100</span></div>'
+    +'<div style="font-weight:700;font-size:17px;margin-top:4px">'+M.name+'</div>'
+    +'<div class="barwrap"><i data-w="'+p+'"></i></div>'
+    +'<div class="sub" style="font-size:13px;margin-top:10px">'+M.why+'</div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px"><span class="tag" style="background:var(--s3);color:var(--t2)">'+M.rev+' · '+M.delay+'</span>'
+    +'<span style="font-family:\'Geist Mono\';font-size:12px;color:'+(sel?'var(--lime)':'var(--t3)')+'">'+(sel?'✓ choisi':'choisir')+'</span></div></div>';
+}
+function planRow(a,i){
+  const days=['Aujourd\'hui · 15 min','Demain · 20 min','J+3 · 15 min'];
+  const mark=i===0?'<span style="width:26px;height:26px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--lime-ink);stroke-width:2.6;fill:none"><path d="M5 12l5 5 9-10"/></svg></span>':'<span style="width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);flex:none"></span>';
+  return '<div class="card" style="display:flex;align-items:center;gap:13px;margin-top:'+(i?12:16)+'px;padding:15px">'+mark+'<div><div style="font-weight:600;font-size:15px">'+a+'</div><div class="mono" style="font-size:12px;color:var(--t3);margin-top:2px">'+days[i]+'</div></div></div>';
+}
+function compute(){
+  const top=S.ranked.slice(0,3);if(!top.length)return;
+  if(!S.chosen||!top.find(r=>r.m===S.chosen))S.chosen=top[0].m;
+  const best=MODULES[S.chosen]||MODULES[top[0].m],score=top[0].score;
+  $('#repScore').setAttribute('data-count',score);
+  const w=(S.ans.words||'').trim(),isB=famB(S.ans);
+  if(isB){
+    $('#repTop').innerHTML='Ton business : <b class="lime">'+esc(MODULES[S.chosen].name)+'</b>.'+(w?'<br><span style="color:var(--t2);font-size:13px">'+esc(w)+'</span>':'')+'<br>On passe en mode <b class="lime">croissance</b>.';
+  }else{
+    $('#repTop').innerHTML=(w?'Ton cap : <b class="lime">'+esc(w)+'</b>.<br>':'')+'Ton modèle le plus compatible te score <b class="lime">'+score+'/100</b>.';
+  }
+  $('#repFit').innerHTML=fitBannerHTML(fitCheck(S.ans));
+  const pj=projOf();
+  const _tl=({0:"moins d'1h",1:"1 à 2h",2:"2 à 3h",3:"3h et +"})[S.ans.time]||'le temps que tu as';
+  const _FR={visi:'le manque de visibilité',vente:'transformer tes prospects en clients',regul:'la régularité',offre:'clarifier ton offre',acq:"l'acquisition de clients",prix:'des prix trop bas',temps:'le manque de temps',systeme:'le manque de système',delegue:'la délégation',canaux:'trouver de nouveaux canaux'};
+  const _fr=S.ans.frein?(_FR[S.ans.frein]||(typeof S.ans.frein==='string'&&S.ans.frein.length<42?S.ans.frein:null)):null;
+  const _budget=(famA(S.ans)&&S.ans.capital!=null)?(S.ans.capital===0?' et <b class="lime">0€</b>':' et un petit budget'):'';
+  $('#repProj').innerHTML='Avec <b class="lime">'+_tl+'/jour</b>'+_budget+', sur <b>'+esc(best.name)+'</b> : '+pj.first+', puis ~'+pj.m3+' en 3 mois.'+(_fr?(' Ton frein, <b>'+esc(_fr)+'</b> ? On l\'attaque dès la semaine 1.'):' On avance une action à la fois, sans te disperser.');
+  const hint=isB?'':'<div class="sub" style="font-size:13px;margin-top:8px;text-align:center">On te conseille le N°1, mais <b class="lime">tu choisis</b>.</div>';
+  $('#matchList').innerHTML=hint+top.map((r,i)=>matchCard(r,i,r.m===S.chosen)).join('');
+  $$('#matchList .rcard').forEach(c=>c.addEventListener('click',()=>{if(c.dataset.m===S.chosen)return;S.chosen=c.dataset.m;saveState();buzz(8);compute();animateScreen('match');}));
+  $('#planActs').innerHTML=best.actions.slice(0,3).map((a,i)=>planRow(a,i)).join('');
+  $('#planTimeline').innerHTML='<div class="ptl">'
+    +'<div class="prow"><span class="pdot"></span><div class="pt">2 semaines</div><div class="pv">'+esc(pj.first.charAt(0).toUpperCase()+pj.first.slice(1))+'</div></div>'
+    +'<div class="prow"><span class="pdot"></span><div class="pt">3 mois</div><div class="pv">~'+pj.m3+" en t'y tenant</div></div>"
+    +'<div class="prow"><span class="pdot"></span><div class="pt">1 an</div><div class="pv">~'+pj.y1+' si tu systématises</div></div>'
+    +'<div class="prow last"><span class="pdot"></span><div class="pt">Dans 10 ans</div><div class="pv">'+esc(pj.vision)+'</div></div>'
+    +'</div>';
+}
+
+/* ---------- CERVEAU (motivation = exécution × train de vie) ---------- */
+function buzz(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
+const BRANCHES=[
+  {k:'food',emoji:'🍎',label:'Repas sain'},
+  {k:'sport',emoji:'🏃',label:'Sport / bougé'},
+  {k:'sleep',emoji:'😴',label:'Bien dormi'},
+  {k:'hydra',emoji:'💧',label:'Hydraté'},
+  {k:'mind',emoji:'🧘',label:'Tête au clair'},
+];
+function prodRatio(){
+  // priorité : tâches du jour courant du projet
+  if(S.project){const t=curTasks();if(t&&t.length)return t.filter(x=>x.done).length/t.length;return 0;}
+  return 0;}
+function brainHealth(){
+  const life=BRANCHES.reduce((s,b)=>s+(S.checkin[b.k]===true?1:0),0)/BRANCHES.length;
+  return Math.round((prodRatio()*0.45 + life*0.55)*100);
+}
+function brainState(h){
+  if(h>=85)return{label:'En pleine forme',msg:'Ton cerveau carbure. Tout est branché, tu tiens sur la durée.'};
+  if(h>=60)return{label:'Bien éveillé',msg:'Bon rythme aujourd\'hui. Encore un geste et il rayonne.'};
+  if(h>=30)return{label:'Au ralenti',msg:'Il tourne à moitié. Coche un geste de plus.'};
+  return{label:'En veille',msg:'Coche ce qui a nourri ta journée, ton cerveau s\'allume.'};
+}
+function slump(){const h=brainHealth();if(h>=60)return null;
+  if(prodRatio()<0.5)return{cause:'Peu de tâches pliées aujourd\'hui, c\'est ça qui met ton cerveau en veille.',fix:'Va plier <b>une seule tâche</b>, la plus facile. Le premier pas relance tout.'};
+  if(S.checkin.food!==true)return{cause:'Ton cerveau tourne au carburant, pas à la volonté.',fix:'<b>Mange un vrai truc</b>, puis reviens cocher 🍎.'};
+  if(S.checkin.sport!==true)return{cause:'Le corps porte la tête. Tu n\'as pas bougé.',fix:'<b>10 min de marche</b> et tu sens ton cerveau repartir.'};
+  return{cause:'Petite baisse de régime, rien de grave.',fix:'Allume la branche la plus simple pour relancer la machine.'};}
+function renderSlump(){const box=$('#slumpCard');if(!box)return;const sl=slump();box.innerHTML=sl?'<div class="slump"><div class="st">Un coup de pouce</div><div class="sc">'+sl.cause+'</div><div class="sf">→ '+sl.fix+'</div></div>':'';}
+function renderFeed(){const box=$('#feed');if(!box)return;box.innerHTML='';
+  const pr=prodRatio(),ct=(S.project?curTasks():[]),pd=ct.filter(t=>t.done).length,pt=ct.length;
+  const auto=document.createElement('div');auto.className='fd auto'+(pr>=0.5?' on':'');
+  auto.innerHTML='<span class="fde">🎯</span><span class="fdl">Productivité <span style="color:var(--t3);font-weight:500">· auto</span></span><span class="fdc">'+pd+'/'+pt+'</span>';
+  box.appendChild(auto);
+  BRANCHES.forEach(f=>{const b=document.createElement('button');b.className='fd'+(S.checkin[f.k]===true?' on':'');
+    b.innerHTML='<span class="fde">'+f.emoji+'</span><span class="fdl">'+f.label+'</span><span class="fdc">'+(S.checkin[f.k]===true?'✓':'+')+'</span>';
+    b.addEventListener('click',()=>{S.checkin[f.k]=S.checkin[f.k]!==true;buzz(12);renderBrain();});box.appendChild(b);});}
+function projTotalDone(){if(!S.project)return 0;let n=0;for(let d=1;d<=S.project.days;d++){const a=S.project.tasks[d]||[];n+=a.filter(t=>t.done).length;}return n;}
+function brainWeek(){const out=[];if(!S.project){for(let i=0;i<7;i++)out.push(0);return out;}const cur=curDay();for(let i=6;i>=0;i--){const d=cur-i;if(d<1){out.push(0);continue;}const a=S.project.tasks[d]||[];out.push(a.length?a.filter(t=>t.done).length/a.length:0);}return out;}
+function renderBrain(){
+  dailyTick();
+  const h=brainHealth(),st=brainState(h);renderFeed();renderSlump();
+  const ng=$('#brainNum'),bg=$('#brainGauge'),rg=bg?bg.querySelector('.ring'):null;
+  if(ng)tween(ng,h,rg,1000);
+  if($('#brainLabel'))$('#brainLabel').textContent=st.label;
+  if($('#brainMsg'))$('#brainMsg').textContent=st.msg;
+  // stats RÉELLES (régularité 7j, total actions, série) — fini les valeurs codées en dur
+  const wk=brainWeek(),pts=wk.map((r,i)=>[10+i*45,Math.round(56-r*38)]);
+  const cv=$('#brainCurve');if(cv)cv.setAttribute('d','M'+pts.map(p=>p[0]+' '+p[1]).join(' L'));
+  const dot=$('#brainCurveDot');if(dot){dot.setAttribute('cx',pts[6][0]);dot.setAttribute('cy',pts[6][1]);}
+  if($('#brainReg'))$('#brainReg').textContent=wk.filter(r=>r>0).length+'/7 jours';
+  if($('#brainActions'))$('#brainActions').textContent=projTotalDone();
+  if($('#brainStreak'))$('#brainStreak').textContent=S.streak;
+  if($('#brainLevel')){const ta=S.totalActions||0;$('#brainLevel').textContent='Cerveau niveau '+(Math.floor(ta/10)+1)+' · '+ta+' action'+(ta>1?'s':'')+' au total';}
+  saveState();}
+
+function countUp(el,to,ring){ if(!el)return; const dur=1100; let t0=null;
+  function f(now){ if(t0===null)t0=now; const t=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-t,3), v=Math.round(to*e);
+    el.textContent=v; if(ring) ring.style.setProperty('--p',v); if(t<1) requestAnimationFrame(f); }
+  requestAnimationFrame(f); }
+function tween(el,to,ring,dur){ if(!el)return; to=Math.round(to); const from=parseInt(el.textContent,10)||0; const d=dur||900;
+  if(from===to){ el.textContent=to; if(ring) ring.style.setProperty('--p',to); return; }
+  let t0=null;
+  function f(now){ if(t0===null)t0=now; const t=Math.min(1,(now-t0)/d), e=1-Math.pow(1-t,3), v=Math.round(from+(to-from)*e);
+    el.textContent=v; if(ring) ring.style.setProperty('--p',v); if(t<1) requestAnimationFrame(f); }
+  requestAnimationFrame(f); }
+function animateScreen(id){ const sc=document.getElementById(id); if(!sc)return;
+  sc.querySelectorAll('[data-count]').forEach(el=>{ const to=+el.getAttribute('data-count'); const g=el.closest('.gauge'); countUp(el,to,g?g.querySelector('.ring'):null); });
+  sc.querySelectorAll('.scoreN[data-to]').forEach(el=>countUp(el,+el.getAttribute('data-to'),null));
+  sc.querySelectorAll('.barwrap>i[data-w]').forEach(i=>{ i.style.width='0'; requestAnimationFrame(()=>{ i.style.width=i.getAttribute('data-w')+'%'; }); }); }
+function show(id){
+  if(!document.getElementById(id)) return;
+  if(id==='report') compute();
+  $$('.screen').forEach(s=>s.classList.toggle('active', s.id===id));
+  $('#tabbar').style.display = APP.includes(id)?'flex':'none';
+  $$('#tabbar .tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===id));
+  const sc=$('#'+id); if(sc) sc.scrollTop=0;
+  if(id==='cerveau') renderBrain();
+  if(id==='home') renderHome();
+  if(id==='suivi') renderSuivi();
+  if(id==='profil') renderProfil();
+  animateScreen(id);
+}
+let lt;
+function startQuiz(){ S.ans={skills:[]}; S.fi=0; renderQ(); show('quiz'); }
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>{
+  if(b.disabled) return;
+  const g=b.dataset.go;
+  if(g==='quiz'){ startQuiz(); return; }
+  if(g==='loading'){ show('loading'); clearTimeout(lt); lt=setTimeout(()=>show('report'),2200); return; }
+  if(g==='home'&&S.profiled&&!S.project){ planFromOnboarding(); }
+  show(g);
+}));
+$$('#tabbar .tab').forEach(t=>t.addEventListener('click',()=>show(t.dataset.tab)));
+async function detectCategory(phrase){
+  const t=(phrase||'').toLowerCase();
+  const local=()=>{
+    if(/vinted|leboncoin|lbc|friperie|sneaker|brocante|seconde main|revend|achat-?revente|dressing/.test(t))return 'M1';
+    if(/shopify|boutique|e-?com|dropship|store|tunnel/.test(t))return 'M2';
+    if(/formation|infoproduit|coach|cours|ebook|mentor|savoir|programme/.test(t))return 'M3';
+    if(/freelance|presta|montage|r[ée]dac|d[ée]velopp|design|web|community manager|graphis/.test(t))return 'M4';
+    if(/tiktok|youtube|insta|influence|cr[ée]ateur|ugc|contenu|abonn[ée]/.test(t))return 'M5';
+    if(/plombier|m[ée]nage|coiffure|resto|jardin|travaux|garagiste|[ée]lectricien|local/.test(t))return 'M6';
+    if(/\bapp\b|saas|logiciel|application|plateforme|micro-?saas/.test(t))return 'M7';
+    return null;
+  };
+  if(typeof ROIZE_API!=='undefined'&&ROIZE_API){
+    try{const r=await fetchT(ROIZE_API+'/understand',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:phrase})});
+      const j=await r.json();if(j&&MASTERED.includes(j.category))return j.category;}catch(e){}
+  }
+  const l=local();return MASTERED.includes(l)?l:null; // beta : on ne reconnaît que les 3 modèles maîtrisés
+}
+async function onQuizNext(){
+  const q=FLOW[S.fi];
+  if(q&&q.id==='bizdesc'&&S.ans.bizdesc&&!S.ans._catAuto){
+    const btn=$('#qnext'),old=btn.textContent;btn.disabled=true;btn.textContent='Analyse…';
+    const guess=await detectCategory(S.ans.bizdesc);
+    if(guess&&MODULES[guess])S.ans.cat=guess;
+    S.ans._catAuto=true;btn.textContent=old;btn.disabled=false;
+  }
+  advance();
+}
+$('#qnext').addEventListener('click',onQuizNext);
+$('#qskip').addEventListener('click',advance);
+$('#qback').addEventListener('click',goBack);
+$$('[data-plan]').forEach(p=>p.addEventListener('click',()=>{ $$('[data-plan]').forEach(x=>x.classList.remove('sel')); p.classList.add('sel'); }));
+/* ---------- TOAST / CONFETTI ---------- */
+function toast(t){const x=$('#toast');if(!x)return;x.textContent=t;x.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>x.classList.remove('show'),1700);}
+function confetti(n){const box=$('#confetti');if(!box)return;box.innerHTML='';const cols=['#C6FF3C','#8B3CFF','#4F6BFF','#E24BD0'];
+  for(let i=0;i<(n||30);i++){const p=document.createElement('i');p.style.left=(Math.random()*100).toFixed(1)+'%';p.style.background=cols[i%cols.length];p.style.animationDelay=(Math.random()*.25).toFixed(2)+'s';p.style.animationDuration=(1.3+Math.random()*.7).toFixed(2)+'s';p.style.transform='rotate('+Math.floor(Math.random()*360)+'deg)';box.appendChild(p);}
+  setTimeout(()=>{box.innerHTML='';},2500);}
+
+/* ---------- JOURNÉE (focus blocks par modèle) ---------- */
+const DAY={
+  M1:[{cat:"Chasse aux bonnes affaires",dur:"2h",rev:1},{cat:"Mise en ligne d'annonces",dur:"45min"},{cat:"Négo & réponses acheteurs",dur:"30min"},{cat:"Bilan du jour",dur:"10min"}],
+  M2:[{cat:"Recherche de produit gagnant",dur:"1h30",rev:1},{cat:"Boutique & fiche produit",dur:"1h"},{cat:"Créa pub & ciblage",dur:"1h"},{cat:"Analyse des chiffres",dur:"20min"}],
+  M3:[{cat:"Affiner ton offre & ton angle",dur:"1h",rev:1},{cat:"Création de contenu / page",dur:"1h30"},{cat:"Visibilité & audience",dur:"45min"},{cat:"Bilan",dur:"10min"}],
+  M4:[{cat:"Prospection clients",dur:"1h",rev:1},{cat:"Production / livrable",dur:"2h"},{cat:"Visibilité (portfolio, posts)",dur:"30min"},{cat:"Bilan",dur:"10min"}],
+  M5:[{cat:"Idéation & script",dur:"45min"},{cat:"Création (tournage/écriture)",dur:"1h30",rev:1},{cat:"Publication & engagement",dur:"45min"},{cat:"Analyse des perfs",dur:"15min"}],
+  M6:[{cat:"Prospection locale",dur:"1h",rev:1},{cat:"Missions / prestations",dur:"2h"},{cat:"Avis & bouche-à-oreille",dur:"30min"},{cat:"Bilan",dur:"10min"}],
+  M7:[{cat:"Build produit (1 feature)",dur:"2h",rev:1},{cat:"Retours utilisateurs",dur:"45min"},{cat:"Visibilité (build in public)",dur:"30min"},{cat:"Bilan",dur:"15min"}]
+};
+const NICHE_TIPS={
+  M1:["Active les alertes sur tes mots-clés : les bonnes affaires partent en moins de 60s, impossible à battre à la main.","Cherche les fautes d'orthographe dans les annonces (nikke, ipone, addiddas) : aucune alerte ne les capte, zéro concurrence.","Arbitrage : achète sur Vinted, revends sur BackMarket/eBay avec une fiche pro → +25-40% de marge sur la confiance.","iPhone/Switch 'écran fissuré' à 40-60€ + réparation locale = +80-120€ net par pièce.","Achète les lots complets sur Leboncoin (même 30% d'invendable) : le vendeur veut vider → -40% négocié.","Photos fond blanc + lumière naturelle = ventes 2× plus rapides qu'un fond coloré."],
+  M2:["Négocie la livraison offerte plutôt qu'une remise prix : +8-12 points de marge, et le fournisseur dit oui plus facilement.","Valide ton produit sur un subreddit niche AVANT de payer en pub (0€ de budget, juste des posts d'aide).","Bundle systématiquement (un 'kit') : ton panier moyen monte sans changer de fournisseur ni de trafic.","Modèle hybride : stocke 50-100 best-sellers chez le fournisseur qui expédie → meilleure marge, zéro logistique.","Commande minimale garantie au fournisseur = -27% sur le pricing en moyenne."],
+  M3:["Vends un atelier à 27-47€ AVANT de créer la formation : pas 10 ventes en 72h ? Le sujet ne vaut pas 3 semaines de taf.","Ne vends pas de l'info (Google est gratuit) : vends une transformation chiffrée ('0 à 1000 abonnés en 30j').","Glisse un upsell 'coaching 1h à 197€' dans ton tunnel : 8-12% cliquent = du CA sans rien produire de plus.","5 jours d'emails 100% utiles (zéro vente) avant un lancement → ventes du J1 ×3.","Paiement en 3× sans frais : tu convertis 25-30% de ceux qui bloquaient sur le prix plein."],
+  M4:["Toujours 3 offres (mini/standard/premium) : 70% prennent le milieu → fais-en ton offre la plus rentable.","Passe en retainer plutôt qu'au TJM : plus de récurrent, moins d'heures, plus de tréso.","Ancre ton prix sur un CDI : 'un CMO junior = 45K€/an, moi c'est 2 500€/mois' → le client calcule la promo tout seul.","Le client accepte ton prix direct ? T'as sous-facturé. +20% à la prochaine propal.","Clause 'résultat garanti ou remboursé' : +30% de conversions, et moins de 2% de remboursements réels."],
+  M5:["Fais de l'UGC B2B : pitch les SaaS qui ont déjà des démos en pub → tu sais qu'ils achètent.","Facture les droits Spark Ads SÉPARÉMENT : laisser tourner tes vidéos en pub = +50-100% du prix.","Lance un challenge payant à 47-97€ avec 20-30 inscrits : tu monétises AVANT d'avoir 10K abonnés.","Poste 2×/jour pendant 14j au lancement : l'algo récompense la vélocité initiale.","Sauvegarde les vidéos de ta niche : l'algo te pousse dans ce feed."],
+  M6:["Demande l'avis Google dans les 24h (pic de satisfaction) : un SMS auto double ton taux de réponse.","Mets un lien Calendly dans ta fiche Google : réserver sans appeler = +40% de conversion.","Remplis toi-même la Q&R de ta fiche Google avec tes 5 objections : tu convertis les hésitants.","Vise l'ultra-local ('plombier Lyon 6') dans ta description : tu bats les agences trop larges.","Abonnement mensuel pour le récurrent (ménage, jardin) : les abonnés restent 3× plus longtemps."],
+  M7:["Landing page + 20 signups en 30j AVANT d'écrire une ligne de code. Échec ? Tu viens d'économiser 2 mois de dev.","Pré-vends 10 accès 'fondateur' (120€/an) : tu valides la WTP et tu fais 1200€ de tréso avant le 1er sprint.","Affiche l'annuel en 1er avec '2 mois offerts' : 30-50% le choisissent → churn ÷4.","Vise les 'boring niches' (dentistes, ramoneurs, restos) : ils paient 100-1000€/mois et changent d'outil tous les 5 ans.","Sonde les churnés avec 1 question ('qu'est-ce qui t'a manqué ?') : ça vaut plus que 10 interviews, et c'est gratuit."]
+};
+function curTips(){return NICHE_TIPS[S.chosen||'M4']||NICHE_TIPS.M4;}
+function popTip(){const t=curTips();if(!t.length)return;$('#tipTx').textContent=t[S.tipI%t.length];S.tipI++;$('#tipSheet').classList.add('show');}
+
+/* ====================================================================
+   ===============  PROJET : flux "Me lancer" + dashboard  ============
+   ==================================================================== */
+
+/* ---------- données du flux ---------- */
+const L_SKILLS=[
+  {v:"write",label:"Écrire / contenu"},{v:"video",label:"Vidéo / photo"},
+  {v:"code",label:"Coder"},{v:"sell",label:"Vendre / négocier"},
+  {v:"teach",label:"Enseigner"},{v:"mkt",label:"Marketing / réseaux"},
+  {v:"manual",label:"Manuel / local"},{v:"none",label:"Rien de précis"}];
+let LF={days:90,hpd:2,skills:[],business:null};
+let lStep=0;
+
+/* ---------- JALONS HEBDO (cycle de 4 semaines) ---------- */
+const MILES=[
+  {k:"Fondations & offre",sub:"Poser des bases nettes et clarifier ce que tu vends."},
+  {k:"Audience & visibilité",sub:"Te rendre visible et attirer les bonnes personnes."},
+  {k:"Contenu & produit",sub:"Produire ce qui crée de la valeur et nourrit la machine."},
+  {k:"Vente & itération",sub:"Convertir, encaisser, puis améliorer sur les retours."}];
+function milestoneFor(day){return MILES[(Math.ceil(day/7)-1)%MILES.length];}
+
+/* ---------- variations d'actions (pour ne pas répéter à l'identique) ---------- */
+const VAR={
+  M1:["Repérer 5 nouvelles annonces sous-cotées","Relancer 3 acheteurs en attente","Réajuster les prix de 3 articles qui stagnent","Tester une nouvelle catégorie de produits","Soigner les photos de 2 annonces"],
+  M2:["Analyser 1 concurrent qui marche","Améliorer 1 visuel de fiche produit","Tester 1 nouvelle accroche pub","Relancer les paniers abandonnés","Chercher 1 produit complémentaire"],
+  M3:["Recueillir 1 témoignage / retour client","Écrire 1 email à ta liste","Améliorer 1 section de ta page de vente","Préparer 1 mini-contenu gratuit","Identifier 1 nouvelle objection à lever"],
+  M4:["Envoyer 5 messages de prospection","Relancer 3 prospects tièdes","Améliorer 1 élément de ton portfolio","Demander 1 recommandation","Affiner ton offre sur 1 point"],
+  M5:["Scripter 1 contenu pour demain","Analyser ton meilleur post de la semaine","Engager avec 10 comptes de ta niche","Recycler 1 ancien contenu","Tester 1 nouveau format"],
+  M6:["Contacter 5 prospects locaux","Demander 1 avis Google","Mettre à jour ta fiche / annonce","Relancer 2 anciens clients","Repérer 1 partenaire local"],
+  M7:["Coder 1 petite amélioration","Interviewer 1 utilisateur","Poster 1 update en build in public","Corriger 1 bug remonté","Tester 1 parcours utilisateur"]};
+
+/* nb d'actions/jour calibré sur heures/jour */
+function tasksPerDay(hpd){return hpd<=1?2:hpd<=2?3:4;}
+/* durée affichée par tâche selon hpd */
+function taskDur(hpd,n){const base=hpd<=1?25:hpd<=2?35:45;return base+(n%2)*15;}
+
+/* ---------- GÉNÉRATION DU PLAN (déterministe, sans IA) ---------- */
+function genPlan(){
+  const biz=LF.business||S.chosen||'M4';
+  const base=(DAY[biz]||DAY.M4).map(b=>b.cat);
+  const vars=VAR[biz]||VAR.M4;
+  const tasks={};
+  let uid=1;
+  for(let d=1;d<=LF.days;d++){
+    const n=tasksPerDay(LF.hpd),mile=milestoneFor(d).k,arr=[];
+    for(let i=0;i<n;i++){
+      let txt;
+      if(i===0){
+        // 1re tâche = action structurante du jour (rotation base + variations)
+        const pool=base.concat(vars);
+        txt=pool[(d-1+i)%pool.length];
+      }else{
+        txt=vars[(d*3+i)%vars.length];
+      }
+      arr.push({id:'t'+(uid++),txt:txt,dur:taskDur(LF.hpd,i)+'min',done:false,milestone:mile,custom:false});
+    }
+    tasks[d]=arr;
+  }
+  S.project={days:LF.days,hpd:LF.hpd,skills:LF.skills.slice(),business:biz,startDay:1,cur:1,createdAt:Date.now(),coachedDate:todayKey(),lastDone:null,tasks:tasks}; // J1 deja cale (les taches sont generees) -> plus de mur "caler avec Roize Bot"
+  S.chosen=biz;
+  saveState();
+}
+
+/* ---------- construire le plan DIRECTEMENT depuis l'onboarding (zéro double saisie) ---------- */
+function hpdFromTime(t){return t>=3?6:t>=2?4:t>=1?2:1;} // heures/semaine (0-3) -> heures/jour
+function planFromOnboarding(){
+  LF={days:(S.ans.engage||90),hpd:hpdFromTime(S.ans.time),skills:(S.ans.skills||[]).slice(),business:S.chosen||'M4'};
+  genPlan();
+}
+
+/* ---------- accès au jour courant ---------- */
+function dayIndexFromStart(P){
+  if(!P)return 1;
+  if(!P.createdAt)return P.startDay||1;
+  const ms=86400000,start=new Date(P.createdAt);start.setHours(0,0,0,0);
+  const today=new Date();today.setHours(0,0,0,0);
+  return Math.max(1,Math.min(P.days,Math.floor((today-start)/ms)+1));
+}
+function curDay(){if(!S.project)return 1;const P=S.project;if(P.cur==null)P.cur=dayIndexFromStart(P);return Math.max(1,Math.min(P.days,P.cur));}
+function curTasks(){if(!S.project)return [];return S.project.tasks[curDay()]||[];}
+function projGlobalDone(){if(!S.project)return 0;let done=0;for(let d=1;d<=S.project.days;d++){const a=S.project.tasks[d]||[];if(a.length&&a.every(t=>t.done))done++;}return done;}
+function projDayCleared(d){const a=S.project.tasks[d]||[];return a.length>0&&a.every(t=>t.done);}
+function planComplete(){return !!(S.project&&curDay()>=S.project.days&&projDayCleared(S.project.days));}
+
+/* ---------- RENDER HOME (branche empty / dashboard) ---------- */
+function renderHome(){
+  dailyTick();
+  const empty=$('#homeEmpty'),dash=$('#homeDash');
+  if(!S.project){empty.style.display='flex';dash.style.display='none';return;}
+  empty.style.display='none';dash.style.display='flex';
+  const P=S.project,M=MODULES[P.business]||MODULES.M4,d=curDay();
+  $('#dDay').textContent=d;$('#dTot').textContent=P.days;
+  $('#dBiz').textContent=M.name;
+  $('#dStreak').textContent='◆ '+S.streak+((S.freezes||0)>0?' ❄️':'');
+  const gdone=projGlobalDone(),pct=Math.round(gdone/P.days*100);
+  $('#dGlobalProg').style.width=pct+'%';
+  $('#dPctV').textContent=pct+'%';
+  $('#dLeftV').textContent=Math.max(0,P.days-d+1);
+  $('#dStreakV').textContent=S.streak;
+  S.view=S.view||'day';
+  $$('#dViewSel button').forEach(b=>b.classList.toggle('on',b.dataset.view===S.view));
+  renderCoachCard();
+  renderView();
+  saveState();
+}
+function setView(v){S.view=v;$$('#dViewSel button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));renderView();saveState();}
+function renderView(){
+  const body=$('#dBody');if(!body)return;
+  if(S.view==='day')renderDayView(body);
+  else if(S.view==='week')renderWeekView(body);
+  else if(S.view==='month')renderMonthView(body);
+  else renderTotalView(body);
+}
+
+/* ===== VUE JOUR : to-do carrée ===== */
+function todayKey(){const d=new Date();d.setHours(0,0,0,0);return d.getTime();}
+function isCoachedToday(){return !!(S.project&&S.project.coachedDate===todayKey());}
+function dailyTick(){ // nouveau jour réel -> on remet les 5 gestes du Cerveau à zéro
+  if(S.checkinDate!==todayKey()){
+    S.checkin={food:false,sport:false,sleep:false,hydra:false,mind:false};
+    S.checkinDate=todayKey();saveState();
+  }
+}
+function dayHeaderHTML(){
+  const b=S.coach&&S.coach.bottleneck;
+  if(b){const pal=S.coach.palier?(' <span class="ms">· vers '+esc(S.coach.palier)+'</span>'):'';
+    return '<div class="milestone"><div class="mk">🎯 Ton goulot à lever</div><div class="mt">'+esc(b)+pal+'</div></div>';}
+  const mile=milestoneFor(curDay());
+  return '<div class="milestone"><div class="mk">Cap de la semaine</div><div class="mt">'+esc(mile.k)+'</div></div>';
+}
+function renderDayView(body){
+  const d=curDay(),mile=milestoneFor(d);
+  if(planComplete()){ // fin du plan : on ne laisse jamais un écran terminal mort, on propose le chapitre suivant
+    body.innerHTML='<div class="card" style="text-align:center;padding:26px 18px;margin-top:8px"><div style="font-size:34px">🏆</div>'
+      +'<div style="font-weight:700;font-size:17px;margin-top:8px">Plan bouclé.</div>'
+      +'<div class="sub" style="font-size:13.5px;margin-top:6px">'+S.project.days+' jours, '+(S.totalActions||0)+' actions pliées, série '+S.streak+'. Respect.</div></div>'
+      +'<div class="flex1"></div>'
+      +'<button class="btn btn-lime" id="dNextChapter" style="margin-top:14px">Construire le chapitre suivant</button>';
+    if($('#dNextChapter'))$('#dNextChapter').addEventListener('click',openLaunch);
+    return;
+  }
+  if(!isCoachedToday()){
+    body.innerHTML=dayHeaderHTML()
+      +'<div class="card" style="margin-top:18px;text-align:center;padding:26px 18px"><div style="font-size:34px">🧭</div>'
+      +'<div style="font-weight:700;font-size:16.5px;margin-top:8px">Roize Bot t\'attend</div>'
+      +'<div class="sub" style="font-size:13.5px;margin-top:4px">Dis-lui ce que tu veux faire aujourd\'hui. Il te conseille franchement, tu décides.</div></div>'
+      +'<div class="flex1"></div>'
+      +'<button class="btn btn-lime" id="dCoachStart" style="margin-top:14px">Caler ma journée avec Roize Bot 🧭</button>';
+    $('#dCoachStart').addEventListener('click',openCoach);
+    return;
+  }
+  const tasks=curTasks(),done=tasks.filter(t=>t.done).length;
+  body.innerHTML=
+    dayHeaderHTML()
+    +'<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-top:16px"><span>Ta journée</span><span class="mono" id="dDoneTxt">'+done+'/'+tasks.length+'</span></div>'
+    +'<div class="prog" style="margin-top:8px"><i id="dDayProg" style="width:'+(tasks.length?Math.round(done/tasks.length*100):0)+'%"></i></div>'
+    +'<div id="dTodos" style="margin-top:6px"></div>'
+    +'<div class="tin"><input id="dTaskIn" placeholder="Ajouter une mission à aujourd\'hui" maxlength="70"/><button class="add" id="dTaskAdd">+</button></div>'
+    +'<div class="flex1" style="min-height:14px"></div>'
+    +'<button class="btn btn-lime" id="dValidate" style="margin-top:14px">'+(done===tasks.length&&tasks.length?'Valider ma journée (+1 série)':'Valider ma journée')+'</button>';
+  renderTodos();
+  $('#dTaskAdd').addEventListener('click',addDayTask);
+  $('#dTaskIn').addEventListener('keydown',e=>{if(e.key==='Enter')addDayTask();});
+  $('#dValidate').addEventListener('click',validateProjectDay);
+}
+function renderTodos(){
+  const box=$('#dTodos');if(!box)return;const d=curDay(),tasks=S.project.tasks[d]||[];
+  box.innerHTML='';
+  tasks.forEach((t,i)=>{
+    const el=document.createElement('div');
+    el.className='todo'+(t.done?' done':'')+(t.custom?' custom':'');
+    el.dataset.i=i;
+    el.innerHTML='<span class="grip"><i></i><i></i><i></i></span>'
+      +'<span class="box"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>'
+      +'<div class="tbody"><div class="tt">'+esc(t.txt)+'</div><div class="tm">≈ '+t.dur+(t.custom?'':' <span class="ms">· '+t.milestone+'</span>')+'</div></div>'
+      +'<button class="exec" title="Roize le fait pour toi">✨</button>'
+      +'<button class="push" title="Repousser à demain">→ dem.</button>';
+    el.querySelector('.box').addEventListener('click',()=>toggleTask(i));
+    el.querySelector('.tt').addEventListener('click',()=>toggleTask(i));
+    el.querySelector('.exec').addEventListener('click',e=>{e.stopPropagation();roizeDoIt(t.txt,e.currentTarget);});
+    el.querySelector('.push').addEventListener('click',e=>{e.stopPropagation();pushTaskTomorrow(i);});
+    attachDrag(el);
+    box.appendChild(el);
+  });
+}
+function toggleTask(i){const d=curDay(),tasks=S.project.tasks[d];if(!tasks[i])return;
+  tasks[i].done=!tasks[i].done;
+  if(tasks[i].done){S.brain=Math.min(100,S.brain+6);buzz(14);
+    if(tasks.every(t=>t.done)){confetti(34);toast('Journée pliée. T\'as assuré 💪');}else toast('Une de pliée 💪');
+  }else S.brain=Math.max(0,S.brain-4);
+  refreshDayProgress();saveState();
+}
+function refreshDayProgress(){
+  const d=curDay(),tasks=S.project.tasks[d]||[],done=tasks.filter(t=>t.done).length;
+  const el=$('#dDoneTxt');if(el)el.textContent=done+'/'+tasks.length;
+  const pr=$('#dDayProg');if(pr)pr.style.width=(tasks.length?Math.round(done/tasks.length*100):0)+'%';
+  renderTodos();
+  // maj en-tête global
+  const gdone=projGlobalDone(),pct=Math.round(gdone/S.project.days*100);
+  if($('#dGlobalProg'))$('#dGlobalProg').style.width=pct+'%';
+  if($('#dPctV'))$('#dPctV').textContent=pct+'%';
+}
+function addDayTask(){const inp=$('#dTaskIn'),v=inp.value.trim();if(v.length<2)return;
+  const d=curDay();S.project.tasks[d]=S.project.tasks[d]||[];
+  S.project.tasks[d].push({id:'c'+Date.now(),txt:v,dur:'20min',done:false,milestone:milestoneFor(d).k,custom:true});
+  inp.value='';buzz(12);refreshDayProgress();inp.focus();saveState();
+}
+function pushTaskTomorrow(i){const d=curDay(),tasks=S.project.tasks[d];if(!tasks[i])return;
+  if(d>=S.project.days){toast('Dernier jour, pas de demain');return;}
+  const t=tasks.splice(i,1)[0];t.done=false;
+  recordSkip(t.txt,t.id);
+  S.project.tasks[d+1]=S.project.tasks[d+1]||[];
+  S.project.tasks[d+1].unshift(t);
+  buzz(12);toast('Repoussé à demain');refreshDayProgress();saveState();
+}
+/* ===== PHASE 4 : mémoire d'abandon + méta-problèmes ===== */
+function taskCatOf(txt){const t=(txt||'').toLowerCase();
+  if(/prospect|contact|message|\bdm\b|relance|appel|appeler|\bmail\b|email|cold/.test(t))return 'acquisition';
+  if(/poster|\bpost\b|contenu|story|reel|vid[ée]o|publi|tiktok|insta|youtube|tweet|cr[ée]er du/.test(t))return 'visibilité';
+  if(/offre|prix|pricing|page de vente|pitch|packag/.test(t))return 'offre';
+  if(/vente|vendre|closing|\bclos(er|e)?\b|devis|facture|encaiss/.test(t))return 'vente';
+  return 'autre';}
+function recordSkip(txt,id){S.coach.skips=S.coach.skips||[];if(id&&S.coach.skips.some(s=>s.id===id))return;S.coach.skips.push({id:id||null,txt:String(txt).slice(0,70),cat:taskCatOf(txt),date:todayKey()});if(S.coach.skips.length>30)S.coach.skips=S.coach.skips.slice(-30);}
+function metaProblem(){const sk=S.coach.skips||[];if(sk.length<3)return null;
+  const cnt={};sk.forEach(s=>{cnt[s.cat]=(cnt[s.cat]||0)+1;});
+  let top=null,n=0;for(const c in cnt){if(c!=='autre'&&cnt[c]>n){n=cnt[c];top=c;}}
+  if(n<3)return null;
+  const cause={acquisition:"la peur de prospecter / d'aller au contact",visibilité:"la peur de te montrer",offre:"un manque de clarté sur ton offre",vente:"la peur de vendre / de demander l'argent"}[top]||'une priorité floue';
+  return {cat:top,count:n,cause:cause};}
+/* ===== PHASE 5 : l'IA fait le livrable ===== */
+async function executeTask(task){
+  if(typeof ROIZE_API==='undefined'||!ROIZE_API)return null;
+  try{const biz=(S.project&&S.project.business)||S.chosen||'M4';
+    const r=await fetchT(ROIZE_API+'/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business:(MODULES[biz]||MODULES.M4).name,profile:S.ans,task:task,stats:suiviStats(),...coachCtx()})});
+    const j=await r.json();
+    if(j&&j.deliverable)return j;
+  }catch(e){}
+  return null;}
+function openExecSheet(deliverable,yours){
+  const b=$('#execBody');if(b)b.textContent=deliverable||'';
+  const y=$('#execYours');if(y)y.textContent=yours?('👉 À toi maintenant : '+yours):'';
+  openExecSheet._txt=deliverable||'';
+  $('#execSheet').classList.add('show');}
+async function roizeDoIt(task,btn){
+  if(!task||roizeDoIt._busy)return;roizeDoIt._busy=true;
+  const old=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='✨…';}
+  let j=null;try{j=await executeTask(task);}finally{roizeDoIt._busy=false;if(btn){btn.disabled=false;btn.textContent=old;}}
+  if(j&&j.deliverable){buzz(14);openExecSheet(j.deliverable,j.yours);}
+  else toast('Pas dispo là, réessaie dans un instant');}
+
+/* ---------- GLISSER pour réordonner (touch + souris) ---------- */
+function attachDrag(el){
+  // glisser au doigt (touch) + souris : on prend le handle, on bouge, les voisins se décalent.
+  const handle=el.querySelector('.grip');
+  let startY=0,dragging=false,cur=0,target=0,siblings=[],h=0;
+  function begin(y){
+    dragging=true;startY=y;el.classList.add('drag');buzz(8);
+    const box=$('#dTodos');siblings=[...box.children];
+    cur=siblings.indexOf(el);target=cur;
+    h=el.offsetHeight+10; // hauteur + marge
+  }
+  function onMove(y){
+    if(!dragging)return;
+    const dy=y-startY;el.style.transform='translateY('+dy+'px)';
+    let shift=Math.round(dy/h);
+    let nt=Math.max(0,Math.min(siblings.length-1,cur+shift));
+    if(nt!==target){
+      target=nt;
+      // décale visuellement les autres
+      siblings.forEach((it,idx)=>{
+        if(it===el)return;
+        let off=0;
+        if(cur<target&&idx>cur&&idx<=target)off=-h;
+        else if(cur>target&&idx<cur&&idx>=target)off=h;
+        it.style.transform=off?'translateY('+off+'px)':'';
+      });
+      buzz(6);
+    }
+  }
+  function end(){
+    if(!dragging)return;dragging=false;
+    el.classList.remove('drag');
+    siblings.forEach(it=>it.style.transform='');
+    const d=curDay(),tasks=S.project.tasks[d];
+    if(target!==cur){const t=tasks.splice(cur,1)[0];tasks.splice(target,0,t);buzz(12);}
+    refreshDayProgress();saveState();
+  }
+  // touch
+  handle.addEventListener('touchstart',e=>{begin(e.touches[0].clientY);e.preventDefault();},{passive:false});
+  el.addEventListener('touchmove',e=>{if(dragging){onMove(e.touches[0].clientY);e.preventDefault();}},{passive:false});
+  el.addEventListener('touchend',end);
+  el.addEventListener('touchcancel',end);
+  // souris (desktop / preview)
+  handle.addEventListener('mousedown',e=>{begin(e.clientY);e.preventDefault();
+    const mm=ev=>onMove(ev.clientY),mu=()=>{end();document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);};
+    document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu);});
+}
+
+/* ====================================================================
+   ===============  COACH : cale la journée (matin)  ==================
+   ==================================================================== */
+const COACH_TIME=[{l:"~1h",v:1},{l:"~2h",v:2},{l:"~3h",v:3},{l:"4h+",v:4}];
+/* ===== ROIZE BOT — coach conversationnel (propose une par une, tu valides) ===== */
+let CO={phase:'time',time:null,kept:[]};
+function coachGreeting(){const h=new Date().getHours();const g=h<12?"Bonjour":h<18?"Salut":"Bonsoir";return g+" 👋 On cale ta journée ?";}
+function coachPeriod(){return "journée";}
+function missionCountFor(time){return Math.max(1,Math.min(5,({1:2,2:3,3:4,4:4})[time]||3));}
+function proposeDayTasks(n){
+  const biz=(S.project&&S.project.business)||S.chosen||'M4';
+  const base=(DAY[biz]||DAY.M4).map(b=>b.cat),vars=VAR[biz]||VAR.M4,d=curDay(),pool=base.concat(vars),out=[];
+  for(let i=0;i<n;i++){out.push(i===0?pool[(d-1)%pool.length]:vars[(d*3+i)%vars.length]);}
+  return out;
+}
+async function aiMissions(n){
+  if(typeof ROIZE_API==='undefined'||!ROIZE_API)return null;
+  try{
+    const biz=(S.project&&S.project.business)||S.chosen||'M4';
+    const body={business:(MODULES[biz]||MODULES.M4).name,desc:S.ans.bizdesc||S.ans.words||'',frein:S.ans.frein||'',cap:milestoneFor(curDay()).k,count:n,stats:suiviStats(),...coachCtx()};
+    const r=await fetchT(ROIZE_API+'/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const j=await r.json();
+    if(j&&Array.isArray(j.missions)&&j.missions.length)return j.missions.map(s=>String(s).slice(0,90));
+  }catch(e){}
+  return null;
+}
+function cScroll(){const c=$('#coachChat');if(c)c.scrollTop=c.scrollHeight;}
+function cMsg(html,who){const c=$('#coachChat');if(!c)return;const m=document.createElement('div');m.className='msg '+(who||'bot');m.innerHTML=html;c.appendChild(m);cScroll();return m;}
+function cThink(){const c=$('#coachChat');const m=document.createElement('div');m.className='msg bot think';m.id='cThink';m.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>';c.appendChild(m);cScroll();}
+function cThinkEnd(){const t=$('#cThink');if(t)t.remove();}
+function cChips(arr,key){const m=document.createElement('div');m.className='msg bot';const w=document.createElement('div');w.className='cchips';
+  arr.forEach(o=>{const b=document.createElement('button');b.className='cchip';b.textContent=o.l;b.addEventListener('click',()=>onCoachChip(key,o.v,o.l,w,b));w.appendChild(b);});
+  m.appendChild(w);$('#coachChat').appendChild(m);cScroll();}
+function coachCtx(){return {bottleneck:S.coach.bottleneck||null,palier:S.coach.palier||null,phase:S.coach.phase||null,coachProfile:(S.coach&&S.coach.profile)||null};}
+function renderFocusBanner(){const b=$('#coachFocus');if(!b)return;
+  if(!S.coach.bottleneck){b.innerHTML='';return;}
+  b.innerHTML='<div style="margin-top:8px;border-radius:14px;padding:11px 14px;background:linear-gradient(var(--s1),var(--s1)) padding-box,var(--aurora) border-box;border:1.5px solid transparent">'
+    +'<div style="font-family:\'Geist Mono\';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--t3)">🎯 Ton focus'+(S.coach.palier?(' · vers '+esc(S.coach.palier)):'')+'</div>'
+    +'<div style="font-size:13.5px;font-weight:600;margin-top:3px;line-height:1.35">'+esc(S.coach.bottleneck)+'</div></div>';}
+async function diagnose(force){
+  if(!S.chosen&&!S.project)return null;
+  if(!force&&S.coach.bottleneck&&S.coach.diagDate===todayKey())return S.coach;
+  if(typeof ROIZE_API==='undefined'||!ROIZE_API)return S.coach;
+  try{const biz=(S.project&&S.project.business)||S.chosen||'M4';
+    const journal=(S.coach.journal||[]).slice(-4).map(j=>j.note).join(' | ');
+    const skips=(S.coach.skips||[]).slice(-8).map(s=>s.txt).join(' ; ');
+    const r=await fetchT(ROIZE_API+'/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business:(MODULES[biz]||MODULES.M4).name,profile:S.ans,stats:suiviStats(),journal:journal,skips:skips})});
+    const j=await r.json();
+    if(j&&j.bottleneck){S.coach.bottleneck=j.bottleneck;S.coach.palier=j.palier||S.coach.palier;S.coach.critere=j.critere||S.coach.critere;S.coach.phase=j.phase||S.coach.phase;S.coach.pourquoi=j.pourquoi||S.coach.pourquoi||null;S.coach.diagDate=todayKey();saveState();}
+  }catch(e){}
+  return S.coach;
+}
+/* ===== PROFILAGE (fin du 1er jour) : l'IA apprend VRAIMENT ton business ===== */
+const PROFQ={
+  M1:["Tu revends quoi exactement ? (catégorie, marques, type d'articles)","Tu sources où, et avec quel budget de départ ?","C'est quoi ton objectif chiffré, et pourquoi tu fais ça ?"],
+  M2:["Tu vends (ou veux vendre) quel produit / quelle niche ?","C'est quoi ta marge et ton prix de vente visé ?","C'est quoi ton objectif, et ta motivation profonde ?"],
+  M3:["C'est quoi ton domaine d'expertise, sur quoi tu sais obtenir un résultat ?","Tu veux aider qui précisément ? (décris UNE personne type)","Quelle transformation tu lui fais vivre, et c'est quoi ton objectif ?"]
+};
+function profQ(){return PROFQ[(S.project&&S.project.business)||S.chosen]||PROFQ.M3;}
+async function aiProfile(answers){
+  if(typeof ROIZE_API==='undefined'||!ROIZE_API)return null;
+  try{const biz=(S.project&&S.project.business)||S.chosen||'M4';
+    const r=await fetchT(ROIZE_API+'/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business:(MODULES[biz]||MODULES.M4).name,answers:answers})});
+    const j=await r.json();if(j&&j.resume)return j;
+  }catch(e){}
+  return null;}
+function startProfiling(){
+  CO={mode:'profile',pq:profQ(),pi:0,pa:[],kept:[]};
+  $('#coachValidate').innerHTML='';
+  cMsg("Avant qu'on se quitte 👇 j'aimerais vraiment connaître <b>ton</b> business, pour arrêter de te donner des conseils génériques. 3 questions, et je retiens tout.");
+  setTimeout(()=>cMsg(CO.pq[0]),550);
+}
+function profileAnswer(text){
+  if(CO.mode!=='profile')return;            // garde anti-réentrance
+  CO.pa.push(text);CO.pi++;
+  if(CO.pi<CO.pq.length){setTimeout(()=>cMsg(CO.pq[CO.pi]),250);return;}
+  CO.mode='profile-wait';                    // verrou pendant la synthèse
+  setTimeout(async()=>{
+    cThink();const prof=await aiProfile(CO.pa.join('  ///  '));cThinkEnd();
+    if(prof&&prof.resume){S.coach.profile=prof;S.ans.bizdesc=prof.resume;}
+    S.coach.profileDone=true;CO.mode=null;saveState();
+    if(S.coach.profile&&S.coach.profile.resume)cMsg("C'est noté 🙏 Voilà comment je vois ton business maintenant :<br><b>"+esc(S.coach.profile.resume)+"</b>");
+    else cMsg("C'est noté 🙏 Je garde tout ça en tête.");
+    cMsg("À partir de maintenant, mes conseils collent <b>vraiment</b> à toi. On se voit demain pour ta journée 👊");
+    setTimeout(()=>show('home'),500);
+  },250);
+}
+/* carte coach proactive (Home) : un message qui réagit au réel, déterministe (zéro coût) */
+function coachNudge(){
+  const st=suiviStats();
+  if(st.joursSansVente!=null&&st.joursSansVente>=3)return "Ça fait "+st.joursSansVente+" jours sans vente loggée. Aujourd'hui, on remet l'acquisition tout en haut.";
+  if(st.ca>0&&st.benefice!=null&&st.benefice<=0)return "Tu fais du chiffre ("+eur(st.ca)+"€) mais ta marge est à zéro. Le chantier du jour, c'est ton prix.";
+  if(S.coach&&S.coach.bottleneck)return "Ton chantier du moment : "+S.coach.bottleneck+". Une action concrète dessus aujourd'hui.";
+  if(st.ca>0)return "Déjà "+eur(st.ca)+"€ ce mois. On garde le rythme : une action qui rapporte aujourd'hui.";
+  return "Le seul vrai score, c'est le chiffre d'affaires. Fais une action qui t'en rapproche aujourd'hui.";
+}
+function renderCoachCard(){
+  const box=$('#dCoachCard');if(!box)return;
+  if(!S.coach.profileDone&&S.coach.profilePending){ // proposé après la 1re journée validée (valeur avant effort)
+    box.innerHTML='<div class="card" style="padding:15px 16px;border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box">'
+      +'<div class="kick" style="margin-bottom:6px">🎯 Tu as plié ta 1re journée</div>'
+      +'<div style="font-size:14px;line-height:1.4;color:var(--t2)">30 secondes pour que je connaisse vraiment ton business ? Après ça, mes conseils collent à toi.</div>'
+      +'<button class="btn btn-lime" id="dProfBtn" style="margin-top:12px;padding:10px;font-size:14px">Apprends à me connaître</button>'
+      +'</div>';
+    if($('#dProfBtn'))$('#dProfBtn').addEventListener('click',function(){S.coach.profilePending=false;saveState();startProfiling();});
+    return;
+  }
+  const ms=86400000,gap=(S.project&&S.project.lastDone)?Math.floor((todayKey()-S.project.lastDone)/ms):0;
+  if(gap>=2){ // retour après une absence : on accueille, on ne punit pas
+    box.innerHTML='<div class="card" style="padding:15px 16px;border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box">'
+      +'<div class="kick" style="margin-bottom:6px">👋 Content de te revoir</div>'
+      +'<div style="font-size:14px;line-height:1.4;color:var(--t2)">'+(S.streak>1?('Ta série de '+S.streak+' t\'attend'+((S.freezes||0)>0?' (un gel te couvre ❄️)':'')+'. '):'')+'Reprends en douceur : une seule action aujourd\'hui et tu repars.</div>'
+      +'<button class="btn btn-lime" id="dBackBtn" style="margin-top:12px;padding:10px;font-size:14px">Reprendre en 5 min</button>'
+      +'</div>';
+    if($('#dBackBtn'))$('#dBackBtn').addEventListener('click',openCoach);
+    return;
+  }
+  box.innerHTML='<div class="card" style="padding:15px 16px">'
+    +'<div class="kick" style="margin-bottom:6px">🧠 Roize Bot</div>'
+    +'<div style="font-size:14px;line-height:1.4;color:var(--t2)">'+esc(coachNudge())+'</div>'
+    +'<button class="btn btn-ghost" id="dAskRoize" style="margin-top:12px;padding:10px;font-size:14px">💬 Demande à Roize</button>'
+    +'</div>';
+  if($('#dAskRoize'))$('#dAskRoize').addEventListener('click',openFreeChat);
+}
+async function aiChat(message){
+  if(typeof ROIZE_API==='undefined'||!ROIZE_API)return null;
+  try{const biz=(S.project&&S.project.business)||S.chosen||'M4';
+    const r=await fetchT(ROIZE_API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:message,profile:S.ans,module:(MODULES[biz]||MODULES.M4).name,stats:suiviStats(),...coachCtx()})});
+    const j=await r.json();return (j&&j.reply)||null;
+  }catch(e){return null;}
+}
+function openFreeChat(){
+  CO={phase:'free',mode:'free',time:null,kept:[]};
+  $('#coachChat').innerHTML='';$('#coachValidate').innerHTML='';renderFocusBanner();
+  const inp=$('#coachIn');if(inp)inp.placeholder='Pose ta question à Roize…';
+  show('coach');
+  cMsg(coachGreeting());
+  cMsg("Demande-moi ce que tu veux sur ton business : prix, prospection, offre, un blocage. Je te réponds cash, d'après ce que je sais de toi.");
+}
+async function openCoach(){
+  CO={phase:'propose',kept:[]};
+  {const _i=$('#coachIn');if(_i)_i.placeholder='Écris une tâche que tu veux faire…';}
+  $('#coachChat').innerHTML='';$('#coachValidate').innerHTML='';renderFocusBanner();
+  show('coach');
+  cMsg(coachGreeting());
+  if(typeof ROIZE_API!=='undefined'&&ROIZE_API&&(!S.coach.bottleneck||S.coach.diagDate!==todayKey())){
+    cThink();await diagnose();cThinkEnd();renderFocusBanner();
+    if(S.coach.bottleneck)cMsg("J'ai regardé tes chiffres. Ton goulot #1 : <b>"+esc(S.coach.bottleneck)+"</b>."+(S.coach.pourquoi?(' '+esc(S.coach.pourquoi)):''));
+  }
+  const mp=metaProblem();
+  if(mp&&S.coach.metaShownDate!==todayKey()){S.coach.metaShownDate=todayKey();saveState();cMsg("Au passage : ça fait <b>"+mp.count+" fois</b> que tu repousses des tâches « "+mp.cat+" ». Souvent, le vrai sujet derrière, c'est <b>"+mp.cause+"</b>. On en parle 2 min ? Dis-moi ce qui te bloque, ça peut tout débloquer.");}
+  cMsg("Aujourd'hui c'est <b>toi qui mènes</b> : tu me dis ce que tu veux faire, je te dis franchement ce que j'en pense, d'après ce qui marche pour ton business.");
+  setTimeout(()=>{CO.phase='propose';cMsg("Alors, balance ta 1re tâche du jour : ce que <b>toi</b> tu veux faire. Je te dis franchement si c'est la bonne priorité. (Bloqué ? clique « j'ai pas d'idée » 👇)");renderCoachValidate();},300);
+}
+function onCoachChip(key,v,label,wrap,btn){
+  CO[key]=v;
+  wrap.querySelectorAll('.cchip').forEach(x=>x.classList.remove('sel'));btn.classList.add('sel');
+  cMsg(esc(label),'usr');buzz(8);CO.phase='propose';
+  setTimeout(()=>{cMsg("Parfait. Balance ta 1re tâche du jour : ce que <b>toi</b> tu veux faire. Je te dis si c'est la bonne priorité, franchement. (Bloqué ? clique « j'ai pas d'idée » 👇)");renderCoachValidate();},280);
+}
+async function coachPropose(){
+  cMsg("J'ai pas d'idée, propose-moi des pistes",'usr');buzz(8);
+  cThink();const n=3;const ai=await aiMissions(n);cThinkEnd();
+  const list=((ai&&ai.length)?ai:proposeDayTasks(n)).slice(0,n);
+  cMsg("Voilà des pistes qui collent à ton business, pioche ce qui te parle :");
+  list.forEach(txt=>{
+    const m=document.createElement('div');m.className='msg bot mcard';
+    m.innerHTML='<div style="font-weight:700;font-size:14px;line-height:1.35">'+esc(txt)+'</div><div class="mact"><button class="mb keep">✓ Je garde</button><button class="mb skip">Passer</button></div>';
+    m.querySelector('.keep').addEventListener('click',()=>{CO.kept.push(txt);buzz(10);cMsg("Je garde 👍",'usr');m.querySelector('.mact').innerHTML='<span style="font-family:\'Geist Mono\';font-size:12px;color:var(--lime)">✓ dans ta journée</span><button class="mb sealdo" style="flex:none;margin-left:8px;padding:7px 11px">✨ Roize le fait</button>';const db=m.querySelector('.sealdo');if(db)db.addEventListener('click',()=>roizeDoIt(txt,db));renderCoachValidate();});
+    m.querySelector('.skip').addEventListener('click',()=>{m.querySelector('.mact').innerHTML='<span style="font-family:\'Geist Mono\';font-size:12px;color:var(--t3)">passée</span>';});
+    $('#coachChat').appendChild(m);
+  });
+  cScroll();
+}
+function renderCoachValidate(){
+  const box=$('#coachValidate');if(!box)return;
+  let h='';
+  if(CO.phase==='propose') h+='<button class="btn btn-ghost" id="coachIdea" style="margin-top:2px;padding:9px;font-size:14px">💡 J\'ai pas d\'idée, propose-moi des pistes</button>';
+  if(CO.kept.length) h+='<button class="btn btn-lime" id="coachValBtn" style="margin-top:6px">Valider ma journée ('+CO.kept.length+')</button>';
+  box.innerHTML=h;
+  if($('#coachIdea'))$('#coachIdea').addEventListener('click',coachPropose);
+  if($('#coachValBtn'))$('#coachValBtn').addEventListener('click',commitCoach);
+}
+function commitCoach(){
+  const picks=CO.kept.slice();if(!picks.length){toast('Garde au moins 1 mission');return;}
+  const d=curDay(),mile=milestoneFor(d).k,hpd=(S.project&&S.project.hpd)||2;
+  S.project.tasks[d]=picks.map((txt,i)=>({id:'m'+Date.now()+i,txt:txt,dur:taskDur(hpd,i)+'min',done:false,milestone:mile,custom:false}));
+  S.project.coachedDate=todayKey();
+  S.coach.journal.push({date:todayKey(),note:'J'+d+': '+picks.length+' mission(s) calée(s)'+(S.coach.bottleneck?(' · focus: '+S.coach.bottleneck.slice(0,70)):'')});
+  if(S.coach.journal.length>12)S.coach.journal=S.coach.journal.slice(-12);
+  saveState();buzz(16);confetti(20);
+  toast('Journée calée. Au boulot 👊');show('home'); // profilage déplacé à J2 (proposé après la 1re journée validée, valeur avant effort)
+}
+async function adviseTask(task){
+  if(typeof ROIZE_API==='undefined'||!ROIZE_API)return adviseFallback(task);
+  try{
+    const biz=(S.project&&S.project.business)||S.chosen||'M4';
+    const r=await fetchT(ROIZE_API+'/advise',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({business:(MODULES[biz]||MODULES.M4).name,profile:S.ans,task:task,day:CO.kept,stats:suiviStats(),...coachCtx()})});
+    const j=await r.json();
+    if(j&&(j.reply||j.verdict))return {verdict:j.verdict||'ameliorer',reply:j.reply||null,suggestion:j.suggestion||null,grounded:!!j.grounded};
+  }catch(e){}
+  return adviseFallback(task);
+}
+function adviseFallback(task){return {verdict:'ameliorer',reply:"Bien noté. Pour qu'elle soit redoutable : un verbe + un chiffre, genre « contacter 5 prospects ».",suggestion:null,grounded:false};}
+async function coachSay(){
+  const inp=$('#coachIn');if(!inp)return;const t=(inp.value||'').trim();if(t.length<2)return;inp.value='';
+  if(CO.mode==='profile-wait')return;       // synthèse en cours, on ignore
+  if(CO.mode==='profile'){cMsg(esc(t),'usr');profileAnswer(t);return;}
+  if(CO.mode==='free'){cMsg(esc(t),'usr');cThink();const rep=await aiChat(t);cThinkEnd();cMsg(rep?esc(rep):"J'ai pas réussi à répondre là, réessaie dans un instant.");return;}
+  cMsg(esc(t),'usr');
+  cThink();const a=await adviseTask(t);cThinkEnd();
+  const vmap={bon:{c:'var(--lime)',l:'✓ Bonne priorité'},ameliorer:{c:'#F0C040',l:'⚑ À affiner'},mauvais:{c:'#FF7A7A',l:'✗ Pas la priorité'}};
+  const vv=vmap[a.verdict]||vmap.ameliorer;
+  cMsg('<div style="font-family:\'Geist Mono\';font-size:11px;letter-spacing:.4px;color:'+vv.c+';margin-bottom:5px">'+vv.l+'</div>'+esc(a.reply||'Noté.'));
+  const m=document.createElement('div');m.className='msg bot mcard';
+  let acts='<button class="mb keep">✓ Garder ma tâche</button>';
+  if(a.suggestion&&a.suggestion.toLowerCase()!==t.toLowerCase())acts+='<button class="mb sugg">✎ Prendre : '+esc(a.suggestion)+'</button>';
+  acts+='<button class="mb skip">✕ Laisser</button>';
+  m.innerHTML='<div style="font-weight:700;font-size:14px;line-height:1.35">'+esc(t)+'</div><div class="mact" style="flex-wrap:wrap">'+acts+'</div>';
+  const seal=(lbl,kt)=>{m.querySelector('.mact').innerHTML='<span style="font-family:\'Geist Mono\';font-size:12px;color:var(--lime)">'+lbl+'</span><button class="mb sealdo" style="flex:none;margin-left:8px;padding:7px 11px">✨ Roize le fait</button>';const db=m.querySelector('.sealdo');if(db)db.addEventListener('click',()=>roizeDoIt(kt,db));renderCoachValidate();cScroll();};
+  m.querySelector('.keep').addEventListener('click',()=>{const kt=t.slice(0,90);CO.kept.push(kt);buzz(10);cMsg("Je garde la mienne 👍",'usr');seal('✓ dans ta journée',kt);});
+  if(m.querySelector('.sugg'))m.querySelector('.sugg').addEventListener('click',()=>{CO.kept.push(a.suggestion);buzz(10);cMsg("Ok, je prends ta version ✏️",'usr');seal('✓ version améliorée gardée',a.suggestion);});
+  m.querySelector('.skip').addEventListener('click',()=>{m.querySelector('.mact').innerHTML='<span style="font-family:\'Geist Mono\';font-size:12px;color:var(--t3)">laissée</span>';});
+  $('#coachChat').appendChild(m);cScroll();
+}
+$('#coachSend').addEventListener('click',coachSay);
+$('#coachIn').addEventListener('keydown',e=>{if(e.key==='Enter')coachSay();});
+$('#coachBack').addEventListener('click',()=>show('home'));
+
+/* ===== VUE SEMAINE ===== */
+function renderWeekView(body){
+  const d=curDay(),wk=Math.ceil(d/7),start=(wk-1)*7+1,mile=MILES[(wk-1)%MILES.length];
+  let rows='';
+  for(let i=0;i<7;i++){const day=start+i;if(day>S.project.days)break;
+    const tasks=S.project.tasks[day]||[],done=tasks.filter(t=>t.done).length,cleared=done===tasks.length&&tasks.length;
+    rows+='<div class="wrow'+(day===d?' today':'')+(cleared?' cleared':'')+'"><div class="wd">J'+day+'</div><div class="wt">'+(tasks[0]?esc(tasks[0].txt):'—')+'</div><div class="wc">'+done+'/'+tasks.length+'</div></div>';
+  }
+  body.innerHTML='<div class="milestone"><div class="mk">Semaine '+wk+' · cap</div><div class="mt">'+mile.k+'</div><div class="sub" style="font-size:13px;margin-top:6px">'+mile.sub+'</div></div>'+rows+'<div class="flex1"></div>';
+}
+
+/* ===== VUE MOIS ===== */
+function renderMonthView(body){
+  const d=curDay(),P=S.project;let cells='';
+  for(let day=1;day<=P.days;day++){
+    const tasks=P.tasks[day]||[],done=tasks.filter(t=>t.done).length,full=done===tasks.length&&tasks.length,part=done>0&&!full;
+    const cls=day<d&&full?'done':full?'done':part?'part':'';
+    cells+='<div class="mcell '+cls+(day===d?' today':'')+'">'+day+'</div>';
+  }
+  const gdone=projGlobalDone(),pct=Math.round(gdone/P.days*100);
+  body.innerHTML='<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-top:16px"><span>Vue d\'ensemble · '+P.days+' jours</span><span class="lime mono">'+pct+'% fait</span></div><div class="mgrid">'+cells+'</div>'
+    +'<div style="display:flex;gap:14px;margin-top:16px;font-size:11.5px;color:var(--t3);font-family:\'Geist Mono\'"><span><b style="color:var(--lime)">■</b> fait</span><span><b style="color:#8B3CFF">■</b> partiel</span><span><b style="color:var(--faint)">■</b> à venir</span></div><div class="flex1"></div>';
+}
+
+/* ===== VUE TOTAL ===== */
+function renderTotalView(body){
+  const P=S.project,gdone=projGlobalDone(),pct=Math.round(gdone/P.days*100),d=curDay(),left=Math.max(0,P.days-d+1);
+  const milesDone=Math.floor(gdone/7);
+  body.innerHTML=
+    '<div class="stats" style="margin-top:18px"><div class="stat"><div class="v l mono">'+gdone+'</div><div class="l">jours pliés</div></div><div class="stat"><div class="v mono">'+pct+'%</div><div class="l">du plan fait</div></div></div>'
+    +'<div class="stats"><div class="stat"><div class="v mono">'+left+'</div><div class="l">jours restants</div></div><div class="stat"><div class="v l mono">'+S.streak+'</div><div class="l">jours de série</div></div></div>'
+    +'<div class="card" style="margin-top:16px"><div class="kick">Jalons franchis</div>'
+    +MILES.map((m,i)=>'<div style="display:flex;align-items:center;gap:10px;margin-top:'+(i?10:12)+'px"><span style="width:20px;height:20px;border-radius:50%;flex:none;border:2px solid '+(i<milesDone?'var(--lime)':'var(--line2)')+';background:'+(i<milesDone?'var(--lime)':'transparent')+'"></span><span style="font-size:14px;font-weight:600;color:'+(i<milesDone?'var(--txt)':'var(--t3)')+'">Semaine '+(i+1)+' · '+m.k+'</span></div>').join('')
+    +'</div><div class="flex1"></div>';
+}
+
+/* ---------- VALIDER LA JOURNÉE (jour+1) ---------- */
+function validateProjectDay(){
+  const P=S.project;if(!P)return;
+  const tasks=curTasks(),done=tasks.filter(t=>t.done).length;
+  if(!tasks.length){toast('Cale d\'abord ta journée avec Roize Bot');buzz(8);return;}
+  if(done<tasks.length){const r=tasks.length-done;toast('Il te reste '+r+' tâche'+(r>1?'s':'')+' : coche-les ou repousse');buzz(8);return;} // série non truquable : il faut vraiment plier la journée
+  const ms=86400000,today=new Date();today.setHours(0,0,0,0);const key=today.getTime();
+  if(P.lastDone===key){toast('Journée déjà validée. À demain 👊');buzz(8);return;}
+  let froze=false; const firstValidation=(P.lastDone==null);
+  const gap=P.lastDone?Math.round((key-P.lastDone)/ms):null;
+  if(gap===1)S.streak++;
+  else if(gap===2&&(S.freezes||0)>0){S.freezes--;S.streak++;froze=true;} // 1 jour manqué + gel dispo -> série sauvée, pas remise à 1
+  else S.streak=1;                                                        // 1re validation ou trou de 2j+ sans gel
+  if(S.streak>0&&S.streak%7===0)S.freezes=Math.min(2,(S.freezes||0)+1);   // 1 gel offert tous les 7 jours pliés
+  P.lastDone=key;S.brain=Math.min(100,S.brain+4);
+  S.totalActions=(S.totalActions||0)+done;                                 // capital cumulatif (lifetime), pour le niveau de Cerveau
+  if(firstValidation&&!S.coach.profileDone)S.coach.profilePending=true;     // profilage proposé à J2 (après la 1re victoire), pas à J1
+  const wasLast=curDay()>=P.days;
+  P.cur=Math.min(P.days,(P.cur||curDay())+1); // le plan avance au rythme des validations, pas du calendrier (plus de jours perdus)
+  P.coachedDate=null;                          // la prochaine journée se cale à nouveau avec Roize Bot
+  S.view='day';confetti(26);buzz(20);
+  const ca=suiviStats().ca;
+  toast('Journée validée. Série : '+S.streak+' 🔥'+(ca>0?(' · '+eur(ca)+'€ ce mois'):'')); // récap relié au CA réel
+  if(froze)setTimeout(()=>toast('Série sauvée avec un gel ❄️'),900);
+  else if(Math.random()<0.5){const tps=(typeof curTips==='function')?curTips():[];if(tps.length){const tip=tps[(S.tipI||0)%tps.length];S.tipI=(S.tipI||0)+1;setTimeout(()=>toast('🎁 Astuce de pro : '+tip),900);}} // astuce auto (variabilité)
+  if(wasLast){confetti(60);setTimeout(()=>toast('Plan bouclé. Regarde le chemin parcouru 🏆'),1100);}
+  renderHome();saveState();
+}
+
+/* ---------- FLUX "ME LANCER" (wiring) ---------- */
+function openLaunch(){LF={days:90,hpd:2,skills:[],business:S.chosen||null};lStep=0;renderLaunchStep();show('launch');}
+function renderLaunchStep(){
+  $$('#launch .lstep').forEach(s=>s.classList.toggle('on',+s.dataset.step===lStep));
+  $('#lCount').textContent='Étape '+(lStep+1)+' / 4';
+  $('#lBar').style.width=((lStep+1)/4*100)+'%';
+  $('#lBack').style.visibility=lStep>0?'visible':'hidden';
+  // pré-remplissage des sélections existantes
+  if(lStep===0){$$('#lDur .bigopt').forEach(b=>b.classList.toggle('sel',(b.dataset.v==='custom'&&![30,60,90].includes(LF.days))||+b.dataset.v===LF.days));
+    const ci=$('#lDurCustom');if(![30,60,90].includes(LF.days)){ci.style.display='block';ci.value=LF.days;}else ci.style.display='none';}
+  if(lStep===1)$$('#lHpd .bigopt').forEach(b=>b.classList.toggle('sel',+b.dataset.v===LF.hpd));
+  if(lStep===2)renderLaunchSkills();
+  if(lStep===3)renderLaunchBiz();
+  refreshLaunchNext();
+}
+function refreshLaunchNext(){
+  let ok=false;
+  if(lStep===0)ok=LF.days>=7;
+  else if(lStep===1)ok=!!LF.hpd;
+  else if(lStep===2)ok=LF.skills.length>0;
+  else if(lStep===3)ok=!!LF.business;
+  const n=$('#lNext');n.disabled=!ok;n.style.opacity=ok?1:.4;
+  n.textContent=lStep===3?'Construire mon plan':'Continuer';
+}
+function renderLaunchSkills(){const box=$('#lSkills');box.innerHTML='';
+  L_SKILLS.forEach(o=>{const b=document.createElement('button');b.className='opt'+(LF.skills.includes(o.v)?' sel':'');b.type='button';
+    b.innerHTML='<span>'+o.label+'</span><span class="chk"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>';
+    b.addEventListener('click',()=>{const i=LF.skills.indexOf(o.v);
+      if(o.v==='none'){LF.skills=LF.skills.includes('none')?[]:['none'];}
+      else{if(i>-1)LF.skills.splice(i,1);else{LF.skills=LF.skills.filter(x=>x!=='none');LF.skills.push(o.v);}}
+      buzz(10);renderLaunchSkills();refreshLaunchNext();});
+    box.appendChild(b);});}
+function renderLaunchBiz(){const box=$('#lBiz');box.innerHTML='';
+  if(!LF.business&&S.chosen)LF.business=S.chosen;
+  Object.keys(MODULES).forEach(m=>{const M=MODULES[m];const b=document.createElement('button');b.className='opt'+(LF.business===m?' sel':'');b.type='button';
+    b.innerHTML='<span>'+M.name+'<span class="sub2">'+M.rev+'</span></span><span class="chk"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>';
+    b.addEventListener('click',()=>{LF.business=m;buzz(10);renderLaunchBiz();refreshLaunchNext();});
+    box.appendChild(b);});}
+function launchNext(){
+  if(lStep<3){lStep++;buzz(14);renderLaunchStep();return;}
+  // fin : générer + dashboard
+  buzz(24);confetti(40);
+  show('launchLoad');
+  const msgs=['On découpe ton objectif en jours…','On cale les jalons par semaine…','On calibre selon tes '+LF.hpd+'h/jour…','On finalise ton plan…'];let n=0;
+  const t=setInterval(()=>{n++;if(msgs[n])$('#lLoadSub').textContent=msgs[n];},520);
+  setTimeout(()=>{clearInterval(t);genPlan();S.view='day';show('home');toast('Ton plan est prêt. Jour 1 !');},2000);
+}
+function launchBack(){if(lStep>0){lStep--;buzz(10);renderLaunchStep();}else show('home');}
+$('#launchBtn').addEventListener('click',openLaunch);
+$('#lNext').addEventListener('click',launchNext);
+$('#lBack').addEventListener('click',launchBack);
+$$('#lDur .bigopt').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.v==='custom'){const ci=$('#lDurCustom');ci.style.display='block';$$('#lDur .bigopt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');ci.focus();LF.days=+ci.value||30;}
+  else{LF.days=+b.dataset.v;$('#lDurCustom').style.display='none';$$('#lDur .bigopt').forEach(x=>x.classList.toggle('sel',x===b));}
+  buzz(10);refreshLaunchNext();}));
+$('#lDurCustom').addEventListener('input',e=>{let v=parseInt(e.target.value,10);if(isNaN(v))v=0;v=Math.max(0,Math.min(365,v));LF.days=v;refreshLaunchNext();});
+$$('#lHpd .bigopt').forEach(b=>b.addEventListener('click',()=>{LF.hpd=+b.dataset.v;$$('#lHpd .bigopt').forEach(x=>x.classList.toggle('sel',x===b));buzz(10);refreshLaunchNext();}));
+$$('#dViewSel button').forEach(b=>b.addEventListener('click',()=>{buzz(8);setView(b.dataset.view);}));
+
+/* ---------- ENDPOINT IA (proxy Gemini) ---------- */
+const ROIZE_API="https://funnelforge.fr/roize-api"; // URL d'un proxy Gemini -> rempli au déploiement. Vide = fallback déterministe local.
+const ROIZE_GOOGLE_CLIENT_ID="201326544268-u2jfqht3fsb6prut2nljamhvpqabjejm.apps.googleusercontent.com"; // OAuth Web client (Google Sign-In)
+// fetch avec timeout : si le proxy/Gemini pend, on abandonne au lieu de figer l'UI ("réfléchit…") -> le catch retombe sur le fallback déterministe
+function fetchT(url,opts,ms){opts=opts||{};const c=new AbortController();const id=setTimeout(()=>{try{c.abort();}catch(e){}},ms||12000);return fetch(url,Object.assign({},opts,{signal:c.signal})).finally(()=>clearTimeout(id));}
+/* ---------- PROFIL ---------- */
+function renderProfil(){$('#profBiz').textContent=MODULES[S.chosen||'M4'].name;$('#profStreak').textContent=S.streak;$('#profBrain').textContent=brainHealth();renderAcct();}
+
+/* ---------- HANDLERS (journée / agent / planner / astuces) ---------- */
+$('#logSend').addEventListener('click',()=>submitLog($('#logIn').value));
+$('#logIn').addEventListener('keydown',e=>{if(e.key==='Enter')submitLog($('#logIn').value);});
+$('#tipMore').addEventListener('click',()=>{const t=curTips();if(!t.length)return;$('#tipTx').textContent=t[S.tipI%t.length];S.tipI++;});
+$('#tipClose').addEventListener('click',()=>$('#tipSheet').classList.remove('show'));
+if($('#execClose'))$('#execClose').addEventListener('click',()=>$('#execSheet').classList.remove('show'));
+if($('#execCopy'))$('#execCopy').addEventListener('click',()=>{const t=openExecSheet._txt||'';buzz(10);
+  const fb=()=>{try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px;opacity:0';document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');document.body.removeChild(ta);toast(ok?'Copié 📋':'Copie indispo');}catch(e){toast('Copie indispo');}};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('Copié 📋')).catch(fb);}else fb();}catch(e){fb();}});
+
+/* ---------- PERSISTANCE (localStorage) ---------- */
+const SKEY='roize.v1';
+/* ---------- SUIVI : dashboard + log langage naturel ---------- */
+const REV=l=>l.type==='vente'||l.type==='client';
+function eur(n){return Math.round(n||0).toLocaleString('fr-FR');}
+function sameMonth(ts,d){const x=new Date(ts);return x.getFullYear()===d.getFullYear()&&x.getMonth()===d.getMonth();}
+function within7(ts,d){return (d-new Date(ts))/86400000 < 7;}
+function suiviGoal(){
+  if(S.goalAmt&&S.goalAmt>0)return S.goalAmt;
+  const M=MODULES[S.chosen]; if(M&&M.rev){const m=M.rev.replace(/\s/g,'').match(/\d+/);if(m)return parseInt(m[0],10);}
+  return 500;
+}
+/* résumé chiffré du Suivi -> envoyé à l'IA (coach) pour qu'elle raisonne sur du réel */
+function suiviStats(){
+  const now=new Date();
+  const rev=S.logs.filter(l=>REV(l)&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.amount||0),0);
+  const dep=S.logs.filter(l=>l.type==='depense'&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.amount||0),0);
+  const clients=S.logs.filter(l=>REV(l)&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.qty||1),0);
+  const goal=suiviGoal();
+  const sales=S.logs.filter(REV).slice().sort((a,b)=>b.ts-a.ts);
+  const joursSansVente=sales.length?Math.floor((Date.now()-sales[0].ts)/86400000):null;
+  const recent=S.logs.slice(-6).map(l=>logTitle(l)+(l.amount?(' '+(l.type==='depense'?'-':'+')+eur(l.amount)+'€'):'')).join(' ; ')||null;
+  return {ca:rev,couts:dep,benefice:rev-dep,objectif:goal,pct:goal?Math.round(rev/goal*100):0,clients,joursSansVente,recent};
+}
+function logIcon(t){return ({vente:'💶',client:'🤝',contenu:'📣',action:'⚡',depense:'🧾',blocage:'🌫️'})[t]||'•';}
+function logTitle(l){
+  const c=l.canal?(' · '+l.canal):'';
+  if(l.type==='vente'||l.type==='client')return (l.qty>1?(l.qty+' ventes'):'Vente'+(l.action==='signer'?' (client signé)':''))+c;
+  if(l.type==='contenu')return 'Contenu posté'+c;
+  if(l.type==='depense')return 'Dépense'+(l.canal?(' · '+l.canal):'');
+  if(l.type==='action')return (l.action?l.action[0].toUpperCase()+l.action.slice(1):'Action')+(l.qty>1?(' ×'+l.qty):'')+c;
+  if(l.type==='blocage')return 'Journée bloquée';
+  return (l.raw||'Note').slice(0,42);
+}
+function relDate(ts){const d=new Date(ts),n=new Date();const j=Math.floor((n.setHours(0,0,0,0)-new Date(ts).setHours(0,0,0,0))/86400000);
+  const h=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  if(j<=0)return "Aujourd'hui "+h; if(j===1)return 'Hier '+h; if(j<7)return j+' j';
+  return d.getDate()+'/'+(d.getMonth()+1);}
+function renderSuivi(){
+  const box=$('#suiviBody'); if(!box)return;
+  const now=new Date();
+  const monthRev=S.logs.filter(l=>REV(l)&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.amount||0),0);
+  const monthDep=S.logs.filter(l=>l.type==='depense'&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.amount||0),0);
+  const weekRev=S.logs.filter(l=>REV(l)&&within7(l.ts,now)).reduce((s,l)=>s+(l.amount||0),0);
+  const weekClients=S.logs.filter(l=>REV(l)&&within7(l.ts,now)).reduce((s,l)=>s+(l.qty||1),0);
+  const monthClients=S.logs.filter(l=>REV(l)&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.qty||1),0);
+  const revAll=S.logs.filter(REV);
+  const ventesTot=revAll.reduce((s,l)=>s+(l.qty||1),0);
+  const caAll=revAll.reduce((s,l)=>s+(l.amount||0),0);
+  const moy=ventesTot?Math.round(caAll/ventesTot):0;
+  const goal=suiviGoal(), pct=goal?Math.min(100,Math.round(monthRev/goal*100)):0;
+  // meilleur jour
+  const byDay={}; revAll.forEach(l=>{const k=new Date(l.ts);k.setHours(0,0,0,0);const key=k.getTime();byDay[key]=(byDay[key]||0)+(l.amount||0);});
+  let bestK=null,bestV=0; for(const k in byDay){if(byDay[k]>bestV){bestV=byDay[k];bestK=+k;}}
+  const bestTxt=bestK?(new Date(bestK).getDate()+'/'+(new Date(bestK).getMonth()+1)+' · '+eur(bestV)+'€'):'—';
+  // chart 14 jours
+  let bars='';let maxd=1;const days=[];
+  for(let i=13;i>=0;i--){const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=d.getTime();const v=byDay[key]||0;maxd=Math.max(maxd,v);days.push({d,v});}
+  days.forEach(o=>{const h=o.v>0?Math.max(6,Math.round(o.v/maxd*100)):3;bars+='<div class="bw" title="'+eur(o.v)+'€"><div class="bar'+(o.v>0?'':' z')+'" style="height:'+h+'%"></div><div class="bl">'+(o.d.getDate())+'</div></div>';});
+  // journal
+  let journal;
+  if(!S.logs.length){journal='<div class="su-empty">Aucune entrée pour l\'instant.<br>Tape ce qui s\'est passé en bas. Ex : « signé un client à 200€ », « vendu 3 articles sur Vinted », « dépensé 40€ en pubs ».</div>';}
+  else{journal='<div class="sjournal">'+S.logs.slice().reverse().slice(0,40).map(l=>{
+    const neg=l.type==='depense';const amt=(l.amount?((neg?'-':'+')+eur(l.amount)+'€'):'');
+    return '<div class="slog"><div class="ic">'+logIcon(l.type)+'</div><div class="tx"><div class="tt">'+esc(logTitle(l))+'</div><div class="dt">'+relDate(l.ts)+'</div></div>'+(amt?'<div class="amt'+(neg?' neg':'')+'">'+amt+'</div>':'')+'<button class="del" data-del="'+esc(l.id)+'">×</button></div>';
+  }).join('')+'</div>';}
+  const benef=monthRev-monthDep, marge=monthRev>0?Math.round(benef/monthRev*100):0;
+  const benefCol=benef>=0?'var(--lime)':'#FF7A7A';
+  box.innerHTML=
+    '<div class="su-ca"><div class="lbl">CA ce mois</div><div class="big">'+eur(monthRev)+'<span> €</span></div>'+
+    '<div class="su-prog"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="gline"><b>+'+eur(weekRev)+'€</b> cette semaine · +'+weekClients+' client'+(weekClients>1?'s':'')+'</div>'+
+    '<div class="goal">Objectif : '+eur(goal)+'€ ('+pct+'%) · <u data-editgoal>modifier</u></div></div>'+
+    '<div class="sblock-h">Rentabilité ce mois</div>'+
+    '<div class="sgrid" style="grid-template-columns:1fr 1fr 1fr">'+
+      '<div class="scard"><div class="v" style="font-size:18px">'+eur(monthRev)+'€</div><div class="k">CA</div></div>'+
+      '<div class="scard"><div class="v" style="font-size:18px;color:#FF7A7A">'+eur(monthDep)+'€</div><div class="k">coûts</div></div>'+
+      '<div class="scard"><div class="v" style="font-size:18px;color:'+benefCol+'">'+eur(benef)+'€</div><div class="k">bénéfice'+(monthRev>0?' · '+marge+'%':'')+'</div></div>'+
+    '</div>'+
+    '<div class="sblock-h">Activité</div>'+
+    '<div class="sgrid">'+
+      '<div class="scard"><div class="v">'+monthClients+'</div><div class="k">clients ce mois</div></div>'+
+      '<div class="scard"><div class="v">'+ventesTot+'</div><div class="k">ventes totales</div></div>'+
+      '<div class="scard"><div class="v">'+eur(moy)+'€</div><div class="k">revenu moyen/vente</div></div>'+
+      '<div class="scard"><div class="v" style="font-size:14px;padding:3px 0">'+bestTxt+'</div><div class="k">meilleur jour</div></div>'+
+    '</div>'+
+    '<div class="sblock-h">14 derniers jours</div><div class="schart">'+bars+'</div>'+
+    '<div class="sblock-h">Journal</div>'+journal;
+  $$('#suiviBody [data-del]').forEach(b=>b.addEventListener('click',()=>delLog(b.dataset.del)));
+  const eg=$('#suiviBody [data-editgoal]'); if(eg)eg.addEventListener('click',editGoal);
+}
+function editGoal(){
+  const cur=suiviGoal();const v=prompt('Ton objectif de CA mensuel (en €) :',cur);
+  if(v===null)return;const n=parseInt(String(v).replace(/\s/g,'').replace(/[^\d]/g,''),10);
+  if(n>0){S.goalAmt=n;saveState();renderSuivi();}
+}
+function delLog(id){
+  const l=S.logs.find(x=>x.id===id);if(!l)return;
+  if(!confirm('Supprimer cette entrée ?'))return;
+  S.logs=S.logs.filter(x=>x.id!==id);saveState();renderSuivi();toast('Entrée supprimée');
+}
+// Fallback local : ne renvoie JAMAIS rien — il interprète toujours.
+function parseLogLocal(text){
+  const t=text.toLowerCase();
+  let amount=null;const am=t.match(/(\d[\d  .]*)\s*(?:€|euros?|eur|balles?)/);
+  if(am)amount=parseInt(am[1].replace(/[^\d]/g,''),10);
+  else{const a2=t.match(/(?:à|a|pour|de)\s+(\d{2,6})\b/);if(a2)amount=parseInt(a2[1],10);}
+  let qty=null;const q=t.match(/(\d+)\s*(articles?|ventes?|clients?|produits?|pi[èe]ces?|personnes?|prospects?|paires?|commandes?)/);
+  if(q)qty=parseInt(q[1],10);
+  const canalMap=[['vinted','Vinted'],['instagram','Instagram'],['insta','Instagram'],['tiktok','TikTok'],['leboncoin','Leboncoin','lbc'],['email','Email'],['mail','Email'],['t[ée]l[ée]phone','Téléphone'],['whatsapp','WhatsApp'],['site','Site'],['shopify','Shopify'],['stripe','Stripe']];
+  let canal=null;for(const c of canalMap){if(new RegExp(c[0]).test(t)){canal=c[1];break;}}
+  let type='autre',action=null;
+  if(/rien (foutu|fait|branl)|bloqu[ée]|procrastin|pas (avanc|boss|rien)|gland[ée]/.test(t))type='blocage';
+  else if(/d[ée]pens|achet[ée].*(pub|stock|fourni|mat)|payé\s+\d|coûté|cout[ée]|frais|investi|pub/.test(t)&&!/signé|vendu|encaiss|gagn/.test(t))type='depense';
+  else if(/post|story|reel|stories|publi[ée]|contenu|tweet|vid[ée]o|tourné/.test(t)){type='contenu';}
+  else if(/sign[ée]|vendu|vente|encaiss|gagn[ée]|client.*\d|commande|pay[ée]\s+par|touch[ée]/.test(t)){type='vente';action=/sign/.test(t)?'signer':'vendre';if(!qty)qty=1;}
+  else if(/prospect|relanc|appel|appelé|contact[ée]|dm|message|rdv|rendez|envoy[ée]|n[ée]goci/.test(t)){type='action';action=(t.match(/prospect|relanc|appel|contact|envoy|n[ée]goci/)||['agir'])[0];}
+  if((type==='vente'||type==='client')&&!amount&&/client/.test(t)&&!qty)qty=1;
+  return {type,amount,qty,canal,action};
+}
+async function parseLogAI(text){
+  if(!ROIZE_API)return null;
+  try{
+    const r=await fetchT(ROIZE_API+'/log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});
+    const j=await r.json();
+    if(!j||!j.type)return null;
+    return {type:j.type,amount:(typeof j.amount==='number'?j.amount:null),qty:(typeof j.qty==='number'?j.qty:null),canal:j.canal||null,action:j.action||null};
+  }catch(e){return null;}
+}
+/* normalise le type (accents/casse/variantes IA) -> jeu canonique, sinon les coûts passent à la trappe */
+function normType(t){
+  t=(t||'').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+  if(t.indexOf('depens')===0||t==='depence'||t==='cout'||t==='couts'||t==='frais'||t==='achat'||t==='depenses')return 'depense';
+  if(t.indexOf('client')===0)return 'client';
+  if(t.indexOf('vente')===0||t==='vendu')return 'vente';
+  if(t.indexOf('contenu')===0)return 'contenu';
+  if(t.indexOf('action')===0)return 'action';
+  if(t.indexOf('blocage')===0||t==='bloque')return 'blocage';
+  return t||'autre';
+}
+/* repère un COÛT secondaire dans une phrase mixte ("j'ai fait X ET ça m'a coûté Y") */
+function extractCostAmount(text){
+  const t=(text||'').toLowerCase();
+  const m=t.match(/(?:co[ûu]t|d[ée]pens|frais|investi)[a-zàâäéèêëïîôöùûüç' ]{0,14}?(\d[\d .]*)/);
+  return m?parseInt(m[1].replace(/[^\d]/g,''),10):null;
+}
+async function submitLog(text){
+  text=(text||'').trim(); if(!text)return;
+  const inp=$('#logIn'); if(inp)inp.value='';
+  let p=await parseLogAI(text); const loc=parseLogLocal(text);
+  if(!p)p=loc; else { if(p.amount==null)p.amount=loc.amount; if(p.qty==null)p.qty=loc.qty; if(!p.canal)p.canal=loc.canal; if(!p.action)p.action=loc.action; }
+  p.type=normType(p.type);
+  if((p.type==='autre'||!p.type)&&loc&&loc.type&&loc.type!=='autre')p.type=normType(loc.type); // IA vague -> on prend le local sûr
+  if((p.type==='vente'||p.type==='client')&&!p.qty)p.qty=1;
+  const mk=o=>({id:'L'+Date.now()+'_'+Math.floor(Math.random()*1e6),ts:Date.now(),type:o.type||'autre',amount:o.amount||null,qty:o.qty||null,canal:o.canal||null,action:o.action||null,raw:text});
+  const extraCost=extractCostAmount(text);
+  const added=[];
+  if(extraCost!=null && p.type!=='depense'){            // phrase mixte : un gain/action + un coût
+    if(p.amount===extraCost)p.amount=null;              // le seul montant était le coût -> pas un revenu
+    if((p.type==='vente'||p.type==='client')&&!p.qty)p.qty=1;
+    added.push(mk(p));
+    added.push(mk({type:'depense',amount:extraCost}));  // le coût, en entrée séparée
+  }else{
+    if(p.type==='depense'&&p.amount==null&&extraCost!=null)p.amount=extraCost;
+    added.push(mk(p));
+  }
+  added.forEach(e=>S.logs.push(e)); saveState(); renderSuivi(); buzz(12);
+  // confirmation
+  const now=new Date();
+  const monthRev=S.logs.filter(l=>REV(l)&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.amount||0),0);
+  const monthDep=S.logs.filter(l=>l.type==='depense'&&sameMonth(l.ts,now)).reduce((s,l)=>s+(l.amount||0),0);
+  const goal=suiviGoal(),pct=goal?Math.min(100,Math.round(monthRev/goal*100)):0;
+  const gotRev=added.some(e=>REV(e)&&e.amount), gotCost=added.some(e=>e.type==='depense'&&e.amount);
+  let msg;
+  if(gotRev&&gotCost){msg='Noté. Vente + coût enregistrés. Bénéfice du mois : '+eur(monthRev-monthDep)+'€ (CA '+eur(monthRev)+'€ − coûts '+eur(monthDep)+'€).';}
+  else if(gotCost){msg='Noté. -'+eur(extraCost||0)+'€ de coût ce mois. Bénéfice : '+eur(monthRev-monthDep)+'€.';}
+  else if(gotRev){msg='Noté. +'+eur(added.find(e=>REV(e)).amount)+'€. Tu en es à '+eur(monthRev)+'€ / objectif '+eur(goal)+'€ ('+pct+'%).';}
+  else if(p.type==='blocage'){msg='Noté. Une journée molle, ça arrive. Demain on repart : une seule action suffit.';}
+  else if(p.type==='contenu'){msg='Noté. Contenu publié. La régularité paie, continue.';}
+  else{msg='Noté. C\'est enregistré dans ton suivi.';}
+  const c=$('#logConfirm'); if(c){c.textContent=msg;c.style.display='block';clearTimeout(submitLog._t);submitLog._t=setTimeout(()=>{c.style.display='none';},5200);}
+  if(gotRev&&added.find(e=>REV(e)&&e.amount>=Math.max(100,goal*0.15)))confetti(28);
+}
+
+function baseState(){return {done:!!S.profiled,ans:S.ans,ranked:S.ranked,chosen:S.chosen,brain:S.brain,streak:S.streak,freezes:S.freezes,totalActions:S.totalActions,feats:S.feats,idx:S.idx,dayDone:S.dayDone,checkin:S.checkin,tipI:S.tipI,project:S.project,view:S.view,logs:S.logs,goalAmt:S.goalAmt,checkinDate:S.checkinDate,theme:S.theme,coach:S.coach};}
+function saveState(){try{const o=baseState();o.account=S.account||null;localStorage.setItem(SKEY,JSON.stringify(o));}catch(e){}scheduleSync();}
+function loadState(){try{const r=localStorage.getItem(SKEY);if(!r)return false;const d=JSON.parse(r);if(!d||!d.done||!d.chosen||!MODULES[d.chosen])return false;Object.assign(S,d);S.profiled=true;if(!S.coach||typeof S.coach!=='object')S.coach={palier:null,critere:null,bottleneck:null,phase:null,pourquoi:null,diagDate:null,metaShownDate:null,journal:[],skips:[],profile:null,profileDone:false};if(!Array.isArray(S.coach.journal))S.coach.journal=[];if(!Array.isArray(S.coach.skips))S.coach.skips=[];if(Array.isArray(S.logs))S.logs.forEach(l=>{if(l)l.type=normType(l.type);});return true;}catch(e){return false;}}
+function restartOnboarding(){try{localStorage.removeItem(SKEY);}catch(e){}S.chosen=null;S.ranked=[];S.streak=1;S.brain=62;S.feats=[];S.dayDone=0;S.idx=0;S.tipI=0;S.profiled=false;S.project=null;S.view='day';S.logs=[];S.goalAmt=null;S.checkinDate=null;S.checkin={food:false,sport:false,sleep:false,hydra:false,mind:false};S.coach={palier:null,critere:null,bottleneck:null,phase:null,pourquoi:null,diagDate:null,metaShownDate:null,journal:[],skips:[],profile:null,profileDone:false};startQuiz();}
+const profRows=document.querySelectorAll('#profil .prow');
+if(profRows[0])profRows[0].addEventListener('click',()=>{if(confirm('Refaire ton profil ? Ça efface ta progression actuelle (plan, série, suivi) et relance le questionnaire.'))restartOnboarding();});
+if(profRows[1])profRows[1].addEventListener('click',()=>toast('Les rappels quotidiens arrivent bientôt 🔔'));
+if(profRows[3])profRows[3].addEventListener('click',openFeedback);
+let fbType='bug';
+function openFeedback(){fbType='bug';const t=$('#fbText');if(t)t.value='';$$('#fbType button').forEach(b=>b.classList.toggle('on',b.dataset.fb==='bug'));$('#fbSheet').classList.add('show');}
+async function sendFeedback(){
+  const t=($('#fbText').value||'').trim();if(t.length<3){toast('Écris un peu plus 🙂');return;}
+  $('#fbSheet').classList.remove('show');toast('Merci, c\'est envoyé 🙏');buzz(12);
+  try{if(typeof ROIZE_API!=='undefined'&&ROIZE_API){await fetchT(ROIZE_API+'/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:fbType,message:t.slice(0,600),biz:(S.chosen||null),ts:Date.now()})});}}catch(e){}
+}
+$$('#fbType button').forEach(b=>b.addEventListener('click',()=>{fbType=b.dataset.fb;$$('#fbType button').forEach(x=>x.classList.toggle('on',x===b));}));
+if($('#fbCancel'))$('#fbCancel').addEventListener('click',()=>$('#fbSheet').classList.remove('show'));
+if($('#fbSend'))$('#fbSend').addEventListener('click',sendFeedback);
+
+/* ---------- COMPTE : Google Sign-In + synchro cloud ---------- */
+let _syncT;
+function scheduleSync(){
+  if(!(S.account&&S.account.session)||typeof ROIZE_API==='undefined'||!ROIZE_API)return;
+  clearTimeout(_syncT);
+  _syncT=setTimeout(()=>{try{fetchT(ROIZE_API+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session:S.account.session,state:baseState()})});}catch(e){}},1500);
+}
+function applyServerState(st){
+  if(!st||!st.chosen||!MODULES[st.chosen])return false;
+  Object.assign(S,st);S.profiled=true;
+  if(!S.coach||typeof S.coach!=='object')S.coach={palier:null,critere:null,bottleneck:null,phase:null,pourquoi:null,diagDate:null,metaShownDate:null,journal:[],skips:[],profile:null,profileDone:false};
+  if(!Array.isArray(S.coach.journal))S.coach.journal=[];
+  if(!Array.isArray(S.coach.skips))S.coach.skips=[];
+  if(Array.isArray(S.logs))S.logs.forEach(l=>{if(l)l.type=normType(l.type);});
+  applyTheme(S.theme||'dark');show('home');return true;
+}
+async function pullState(){
+  if(!(S.account&&S.account.session)||typeof ROIZE_API==='undefined'||!ROIZE_API)return;
+  try{const r=await fetchT(ROIZE_API+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session:S.account.session})});const j=await r.json();
+    if(j&&j.error==='invalid_session'){S.account=null;saveState();renderAcct();}
+    else if(j&&j.ok&&j.state&&j.state.chosen){applyServerState(j.state);saveState();}
+  }catch(e){}
+}
+async function onGoogleCredential(resp){
+  if(!resp||!resp.credential)return;
+  toast('Connexion…');
+  try{
+    const r=await fetchT(ROIZE_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken:resp.credential,state:baseState()})});
+    const j=await r.json();
+    if(j&&j.ok&&j.session){
+      S.account={session:j.session,email:j.email||null};
+      if(j.state&&j.state.chosen){applyServerState(j.state);toast('Bienvenue'+(j.email?' '+j.email.split('@')[0]:'')+' · données restaurées 🔄');}
+      else toast('Compte connecté · synchro activée ✅');
+      saveState();renderAcct();
+    } else toast('Connexion impossible, réessaie');
+  }catch(e){toast('Connexion impossible (réseau)');}
+}
+function signOut(){S.account=null;saveState();try{if(window.google&&google.accounts&&google.accounts.id)google.accounts.id.disableAutoSelect();}catch(e){}renderAcct();toast('Déconnecté');}
+function renderGoogleButton(){
+  const el=$('#gbtn');if(!el)return;
+  if(window._gisReady&&window.google&&google.accounts&&google.accounts.id){
+    el.innerHTML='';
+    try{google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'pill',text:'continue_with',logo_alignment:'center'});}
+    catch(e){el.innerHTML='<button class="btn btn-ghost" style="padding:10px;font-size:14px" onclick="try{google.accounts.id.prompt()}catch(_){}">Continuer avec Google</button>';}
+  } else { el.innerHTML='<div class="sub" style="font-size:12.5px;text-align:center">Chargement de Google…</div>'; setTimeout(renderGoogleButton,500); }
+}
+function renderAcct(){
+  const box=$('#acctBox');if(!box)return;
+  if(S.account&&S.account.session){
+    box.innerHTML='<div class="card" style="padding:15px 16px"><div class="kick" style="margin-bottom:6px">Compte</div>'
+      +'<div style="font-size:14px;color:var(--t2)">Connecté'+(S.account.email?(' · <b>'+esc(S.account.email)+'</b>'):'')+'. <span style="color:var(--lime)">Synchro active.</span></div>'
+      +'<button class="btn btn-ghost" id="acctOut" style="margin-top:12px;padding:10px;font-size:14px">Se déconnecter</button></div>';
+    if($('#acctOut'))$('#acctOut').addEventListener('click',signOut);
+  } else {
+    box.innerHTML='<div class="card" style="padding:15px 16px"><div class="kick" style="margin-bottom:6px">Compte</div>'
+      +'<div style="font-size:14px;color:var(--t2)">Connecte-toi pour sauvegarder ta progression et la retrouver sur tous tes appareils.</div>'
+      +'<div id="gbtn" style="margin-top:12px;display:flex;justify-content:center"></div></div>';
+    renderGoogleButton();
+  }
+}
+function initGIS(){
+  if(typeof ROIZE_GOOGLE_CLIENT_ID==='undefined'||!ROIZE_GOOGLE_CLIENT_ID)return;
+  if(!(window.google&&google.accounts&&google.accounts.id)){setTimeout(initGIS,300);return;}
+  try{google.accounts.id.initialize({client_id:ROIZE_GOOGLE_CLIENT_ID,callback:onGoogleCredential,auto_select:false});window._gisReady=true;if($('#gbtn'))renderGoogleButton();}catch(e){}
+}
+
+/* routing initial : deep-link > utilisateur connu (home) > welcome */
+if(location.hash){ const id=location.hash.slice(1); if(document.getElementById(id)){ if(id==='quiz')startQuiz(); else show(id); } }
+else if(loadState()){ show('home'); }
+/* ===== THÈMES ===== */
+function applyTheme(t){t=(t==='light')?'light':'dark';S.theme=t;const p=$('#phone');if(p)p.classList.toggle('light',t==='light');
+  $$('#themeSel button').forEach(b=>b.classList.toggle('on',b.dataset.theme===t));
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='light'?'#F4F1EA':'#0A0A0F');}
+$$('#themeSel button').forEach(b=>b.addEventListener('click',()=>{applyTheme(b.dataset.theme);saveState();buzz(8);}));
+try{const _sv=JSON.parse(localStorage.getItem(SKEY)||'{}');if(_sv&&_sv.theme)S.theme=_sv.theme;}catch(e){}
+applyTheme(S.theme||'dark');
+initGIS();
+if(S.account&&S.account.session)pullState(); // au démarrage, si connecté, on tire l'état le plus récent (multi-appareils)
+</script>
+</body>
+</html>

@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Roize</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="%230A0A0F"/><rect x="9" y="9" width="14" height="14" rx="4" transform="rotate(45 16 16)" fill="%23C6FF3C"/></svg>'>
+<link rel="apple-touch-icon" href="phoenix.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0A0F">
+<meta name="description" content="Roize — chaque matin, la bonne action pour faire grossir ton business.">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0F; --s1:#121218; --s2:#16161E; --s3:#1C1C26;
+  --txt:#F6F4FF; --t2:rgba(255,255,255,.72); --t3:rgba(255,255,255,.50); --faint:#56536F;
+  --lime:#C6FF3C; --lime2:#B6FF3C; --lime-ink:#0E2200; --em:#2BD67B;
+  --ok:#6EE7A8; --ok-bg:rgba(43,214,123,.10); --ok-line:rgba(43,214,123,.30);
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+  --aurora:linear-gradient(100deg,#4F6BFF,#8B3CFF,#E24BD0);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;width:100%;overscroll-behavior:none}
+body{position:fixed;inset:0;font-family:'Satoshi',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#000;color:var(--txt);display:flex;align-items:center;justify-content:center}
+.phone{position:relative;width:100%;max-width:430px;height:100dvh;max-height:100dvh;background:var(--bg);
+  overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:480px){.phone{height:92vh;max-height:920px;border-radius:46px;
+  box-shadow:0 50px 130px -30px rgba(139,60,255,.45),0 0 0 1px rgba(255,255,255,.06)}}
+
+/* halo + grain */
+.halo{position:absolute;top:-12%;left:-14%;right:-14%;height:44%;background:var(--aurora);opacity:.5;filter:blur(60px);z-index:0;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 12%,transparent 95%);mask-image:linear-gradient(180deg,#000 0%,#000 12%,transparent 95%);pointer-events:none}
+.grain{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* status bar */
+.status{position:absolute;top:0;left:0;right:0;z-index:9;display:flex;justify-content:space-between;align-items:center;
+  padding:15px 26px 0;font-weight:700;font-size:14.5px;color:var(--txt);pointer-events:none}
+.batt{width:23px;height:12px;border:1.4px solid rgba(255,255,255,.7);border-radius:3.5px;position:relative;display:inline-block}
+.batt::before{content:"";position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:72%;background:#fff;border-radius:1.5px}
+.batt::after{content:"";position:absolute;right:-3px;top:3.5px;width:2px;height:4px;background:rgba(255,255,255,.7);border-radius:0 2px 2px 0}
+
+.screen{position:absolute;inset:0;z-index:1;display:none;flex-direction:column;padding:32px 22px 26px;overflow-y:auto}
+.screen.active{display:flex}
+.screen::-webkit-scrollbar{display:none}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* animations : cascade d'apparition par ecran */
+.screen.active>*{animation:rise .55s cubic-bezier(.2,.85,.3,1) backwards}
+.screen.active>*:nth-child(1){animation-delay:.04s}
+.screen.active>*:nth-child(2){animation-delay:.10s}
+.screen.active>*:nth-child(3){animation-delay:.16s}
+.screen.active>*:nth-child(4){animation-delay:.22s}
+.screen.active>*:nth-child(5){animation-delay:.28s}
+.screen.active>*:nth-child(6){animation-delay:.34s}
+.screen.active>*:nth-child(n+7){animation-delay:.40s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* trace des courbes */
+.draw{stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 1.6s .35s cubic-bezier(.3,.8,.3,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+/* shimmer sur les boutons lime */
+.btn-lime{position:relative;overflow:hidden}
+.btn-lime::after{content:"";position:absolute;top:0;left:-65%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:shimmer 4s ease-in-out infinite;pointer-events:none}
+@keyframes shimmer{0%,55%{left:-65%}100%{left:150%}}
+.flex1{flex:1}
+.center{align-items:center;text-align:center;justify-content:center}
+
+/* type */
+h1{font-family:'Clash Display';font-weight:600;font-size:34px;line-height:1.12;letter-spacing:-.3px;word-spacing:1px}
+h2{font-family:'Clash Display';font-weight:600;font-size:27px;line-height:1.18;letter-spacing:-.2px;word-spacing:1px}
+.kick{font-family:'Geist Mono';font-size:11.5px;font-weight:500;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
+.sub{color:var(--t2);font-size:15px;line-height:1.55;margin-top:12px}
+.mono{font-family:'Geist Mono';font-variant-numeric:tabular-nums}
+.lime{color:var(--lime)}
+
+/* brand */
+.brand{display:flex;align-items:center;gap:9px;font-family:'Clash Display';font-weight:700;font-size:21px}
+.dmark{width:15px;height:15px;background:var(--aurora);transform:rotate(45deg);border-radius:3px;box-shadow:0 0 12px rgba(198,255,60,.4)}
+.dmark.l{background:var(--lime)}
+
+/* buttons */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:1.6px solid transparent;cursor:pointer;
+  font-family:'Satoshi';font-size:16.5px;font-weight:700;padding:19px;border-radius:999px;transition:transform .15s;color:#fff}
+.btn:active{transform:scale(.98)}
+.btn-lime{background:var(--lime);color:var(--lime-ink);box-shadow:0 14px 40px -12px rgba(198,255,60,.5)}
+.btn-aurora{background:linear-gradient(var(--s1),var(--s1)) padding-box, var(--aurora) border-box;color:#fff}
+.btn-ghost{background:transparent;color:var(--t3);font-weight:600;padding:14px}
+
+/* progress */
+.prog{height:5px;background:rgba(255,255,255,.1);border-radius:9px;overflow:hidden}
+.prog>i{display:block;height:100%;background:var(--aurora);border-radius:9px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+/* option cards */
+.opts{display:flex;flex-direction:column;gap:12px;margin-top:26px}
+.opt{display:flex;align-items:center;gap:14px;padding:17px 16px;border-radius:18px;cursor:pointer;background:var(--s1);
+  border:1.5px solid var(--line);transition:transform .15s,border-color .15s;color:var(--txt);font-size:16px;font-weight:600;width:100%;text-align:left}
+.opt:active{transform:scale(.99)}
+.opt .ic{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+.opt .ic svg{width:19px;height:19px;stroke:#cfcbe6;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.opt.sel{border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box}
+.opt.sel .ic{background:rgba(139,60,255,.2);border-color:transparent}
+.opt.sel .ic svg{stroke:var(--lime)}
+.opt .chk{margin-left:auto;flex:none;width:23px;height:23px;border-radius:50%;background:var(--lime);display:none;align-items:center;justify-content:center}
+.opt.sel .chk{display:flex}
+.opt .chk svg{width:13px;height:13px;stroke:var(--lime-ink);stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.feed{margin-top:12px;background:var(--ok-bg);border:1px solid var(--ok-line);border-radius:14px;padding:13px 15px;font-size:13.5px;line-height:1.5;color:var(--ok);font-weight:500;display:none;gap:9px}
+.feed.on{display:flex;animation:in .3s ease}
+.feed b{color:#fff}
+
+/* welcome spark */
+.spark{position:relative;width:200px;height:200px;margin:10px auto;display:flex;align-items:center;justify-content:center}
+.spark .glow{position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(139,60,255,.9),rgba(139,60,255,0) 65%);filter:blur(8px);animation:breathe 4s ease-in-out infinite}
+.spark .core{position:absolute;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 45% 40%,#fff,#C6A0FF 50%,#8B3CFF);box-shadow:0 0 40px 8px rgba(198,255,60,.35),0 0 70px 20px rgba(139,60,255,.5)}
+.spark .ray{position:absolute;background:linear-gradient(var(--lime),transparent);width:3px;height:90px;border-radius:3px;opacity:.9}
+.spark .ray.v{height:150px}.spark .ray.h{transform:rotate(90deg);height:130px}
+@keyframes breathe{0%,100%{transform:scale(.92);opacity:.8}50%{transform:scale(1.08);opacity:1}}
+/* hero phenix (welcome) */
+.herophx{position:relative;width:240px;height:240px;margin:4px auto;display:flex;align-items:center;justify-content:center}
+.herophx .hglow{position:absolute;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle,rgba(139,60,255,.55),transparent 64%);filter:blur(16px);animation:breathe 4.2s ease-in-out infinite}
+.herophx img{position:relative;width:236px;height:236px;object-fit:contain;animation:floaty 5s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+/* score gauge */
+.gauge{position:relative;width:200px;height:200px;margin:6px auto}
+.gauge .ring{width:100%;height:100%;border-radius:50%;background:conic-gradient(var(--lime) calc(var(--p,78)*1%), rgba(255,255,255,.07) 0)}
+.gauge .hole{position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#16142a,#0c0b14);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .num{font-family:'Geist Mono';font-weight:600;font-size:54px;color:var(--lime);line-height:1}
+.gauge .lab{font-family:'Geist Mono';font-size:10.5px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;margin-top:4px}
+/* gem (cerveau) */
+.gauge .gem{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(45deg);width:58px;height:58px;border-radius:13px;
+  background:linear-gradient(135deg,#C9A6FF,#8B3CFF 55%,#5B2BFF);box-shadow:inset 0 3px 8px rgba(255,255,255,.4),0 10px 30px -6px rgba(139,60,255,.7)}
+.gauge .gnum{position:absolute;left:50%;bottom:17%;transform:translateX(-50%);font-family:'Geist Mono';font-weight:600;font-size:32px;color:var(--lime);z-index:2;text-shadow:0 2px 10px #0c0b14}
+.gauge .chole{position:absolute;inset:13px;border-radius:50%;background:#09080e}
+.gauge .phx{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:150px;height:150px;object-fit:contain;z-index:1;animation:bobp 5s ease-in-out infinite}
+@keyframes bobp{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,calc(-50% - 6px))}}
+
+/* glass card */
+.card{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+
+/* growth curve */
+.curve{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:14px}
+.curve .hd{display:flex;justify-content:space-between;font-size:12.5px;color:var(--t3);margin-bottom:8px}
+
+/* shock card */
+.shock{margin-top:14px;border-radius:18px;padding:20px;border:1.5px solid transparent;
+  background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.shock .k{font-family:'Geist Mono';font-size:11px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase}
+.shock .b{font-family:'Clash Display';font-weight:600;font-size:26px;line-height:1.15;margin-top:8px}
+
+/* action card (home) */
+.action{border-radius:22px;padding:20px;border:1.5px solid transparent;background:linear-gradient(var(--s1),var(--s1)) padding-box, var(--aurora) border-box;box-shadow:0 24px 60px -34px rgba(139,60,255,.8)}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:'Geist Mono';font-size:11px;font-weight:600;color:var(--lime-ink);background:var(--lime);padding:5px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
+.action .ti{font-family:'Clash Display';font-weight:600;font-size:22px;line-height:1.25;margin-top:13px}
+.action .mt{color:var(--t2);font-size:13.5px;margin-top:9px}
+
+/* timeline */
+.tl{margin-top:8px}
+.tl .row{display:flex;gap:14px;padding:7px 0}
+.tl .dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--lime);flex:none;margin-top:3px}
+.tl .dot.done{background:var(--lime)}
+.tl .tm{font-family:'Geist Mono';font-size:13px;color:var(--t3)}
+.tl .tt{font-size:14.5px;font-weight:600;margin-top:1px}
+.tl .row.done .tt{color:var(--t3);text-decoration:line-through}
+.tl .row.now .tm{color:var(--lime)}
+.tl .line{width:2px;background:var(--line2);margin-left:5px;flex:none}
+
+/* streak */
+.streak{display:inline-flex;align-items:center;gap:6px;font-family:'Geist Mono';font-weight:600;font-size:14px;color:var(--lime);
+  background:rgba(198,255,60,.1);border:1px solid rgba(198,255,60,.3);padding:7px 13px;border-radius:999px}
+
+/* stat cards */
+.stats{display:flex;gap:12px;margin-top:14px}
+.stat{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stat .v{font-family:'Geist Mono';font-weight:600;font-size:28px}
+.stat .v.l{color:var(--lime)}
+.stat .l{font-size:12px;color:var(--t3);margin-top:3px}
+
+/* sparkline */
+.spk .hd{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--t2);margin-bottom:6px}
+
+/* paywall plans */
+.plan{position:relative;border-radius:18px;padding:17px 18px;background:var(--s1);border:1.5px solid var(--line);margin-top:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.plan.best{border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.plan .pn{font-weight:700;font-size:17px}
+.plan .pp{font-family:'Geist Mono';font-size:13.5px;color:var(--t2);margin-top:3px}
+.plan .badge{position:absolute;top:-10px;left:16px;font-family:'Geist Mono';font-size:11px;font-weight:600;color:var(--lime-ink);background:var(--lime);padding:2px 9px;border-radius:7px}
+.plan .r{width:24px;height:24px;border-radius:50%;border:2px solid var(--line2);flex:none}
+.plan.sel .r{border-color:transparent;background:var(--lime);display:flex;align-items:center;justify-content:center}
+.plan.sel .r svg{width:13px;height:13px;stroke:var(--lime-ink);stroke-width:2.6;fill:none}
+.tline{display:flex;justify-content:space-between;margin:18px 4px 4px;position:relative}
+.tline::before{content:"";position:absolute;left:8%;right:8%;top:6px;height:2px;background:var(--line2)}
+.tstep{display:flex;flex-direction:column;align-items:center;gap:7px;font-family:'Geist Mono';font-size:10.5px;color:var(--t3);width:33%;text-align:center;position:relative}
+.tstep .d{width:13px;height:13px;border-radius:50%;background:var(--s3);border:2px solid var(--line2)}
+.tstep.on .d{background:var(--lime);border-color:var(--lime)}
+.tstep.on{color:var(--lime)}
+.social{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--t2);font-size:13px;margin-top:16px}
+.logos{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:12px;opacity:.6;font-size:13px;font-weight:600}
+
+/* tab bar */
+.tabbar{position:absolute;left:50%;transform:translateX(-50%);bottom:18px;z-index:25;display:flex;gap:6px;padding:8px;
+  background:rgba(20,19,28,.86);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:999px}
+.screen .tabbar{display:none}
+.tabbar .tab{width:54px;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tabbar .tab svg{width:23px;height:23px;stroke:var(--t3);fill:none;stroke-width:1.8}
+.tabbar .tab.on{background:rgba(198,255,60,.12)}
+.tabbar .tab.on svg{stroke:var(--lime)}
+#home,#cerveau,#agent,#profil{padding-bottom:96px}
+
+/* chat */
+.chat{flex:1;display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding:6px 0}
+.msg{max-width:84%;padding:13px 15px;border-radius:18px;font-size:14.5px;line-height:1.45}
+.msg.bot{align-self:flex-start;background:var(--s1);border:1px solid var(--line);border-bottom-left-radius:6px}
+.msg.usr{align-self:flex-end;background:var(--aurora);border-bottom-right-radius:6px}
+.chatbar{display:flex;gap:9px;align-items:center;padding-top:10px}
+.chatbar input{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:999px;padding:14px 17px;color:var(--txt);font-family:inherit;font-size:14.5px;outline:none}
+.chatbar .send{width:48px;height:48px;border-radius:50%;background:var(--lime);border:none;color:var(--lime-ink);font-size:18px;flex:none;cursor:pointer}
+
+/* dynamic quiz */
+.opt .sub2{display:block;font-weight:500;font-size:12.5px;color:var(--t3);margin-top:2px}
+.txt{width:100%;background:var(--s1);border:1.5px solid var(--line);border-radius:16px;padding:17px 18px;color:var(--txt);
+  font-family:'Clash Display';font-weight:600;font-size:19px;outline:none;transition:border-color .15s;margin-top:26px}
+.txt:focus{border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.txt::placeholder{color:var(--faint);font-weight:500}
+
+/* check-in chips (cerveau) */
+.ckrow{margin-top:16px}
+.ckrow .lbl{font-family:'Geist Mono';font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.chips{display:flex;gap:8px}
+.chip{flex:1;background:var(--s1);border:1.5px solid var(--line);border-radius:13px;padding:11px 6px;color:var(--t2);
+  font-family:'Satoshi';font-size:13px;font-weight:600;cursor:pointer;transition:transform .12s,border-color .15s;text-align:center}
+.chip:active{transform:scale(.97)}
+.chip.sel{border-color:transparent;background:linear-gradient(var(--s3),var(--s3)) padding-box, var(--aurora) border-box;color:var(--txt)}
+
+/* slump card */
+.slump{margin-top:16px;border-radius:18px;padding:16px 17px;background:rgba(224,97,60,.10);border:1.5px solid rgba(224,97,60,.35);text-align:left}
+.slump .st{font-family:'Geist Mono';font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#F0A07A;font-weight:600}
+.slump .sc{font-size:14px;line-height:1.5;margin-top:8px;color:var(--txt)}
+.slump .sf{font-size:13.5px;line-height:1.5;margin-top:10px;color:var(--t2)}
+.slump .sf b{color:var(--lime)}
+
+/* fit banner (report) */
+.fitb{margin-top:14px;border-radius:14px;padding:15px 16px;font-size:13.5px;line-height:1.55;text-align:left}
+.fitb.hard{background:rgba(224,97,60,.12);border:1px solid rgba(224,97,60,.4)}
+.fitb.soft{background:rgba(139,60,255,.14);border:1px solid rgba(139,60,255,.4)}
+.fitb b{color:var(--txt)}
+
+/* results bars (match) */
+.barwrap{height:7px;background:rgba(255,255,255,.08);border-radius:9px;overflow:hidden;margin-top:11px}
+.barwrap>i{display:block;height:100%;width:0;background:var(--aurora);border-radius:9px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.rcard.top .barwrap>i{background:var(--lime)}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(18px);z-index:40;background:rgba(20,19,28,.96);backdrop-filter:blur(16px);border:1px solid var(--line2);color:var(--txt);font-size:14px;font-weight:600;padding:12px 18px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:300px;text-align:center;line-height:1.4}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* confetti */
+.confetti{position:absolute;inset:0;z-index:39;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(760px) rotate(560deg);opacity:.15}}
+/* bottom sheet (astuces) */
+.sheet{position:absolute;inset:0;z-index:42;background:rgba(6,6,10,.55);backdrop-filter:blur(3px);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet.show{opacity:1;pointer-events:auto}
+.sheetcard{width:100%;background:var(--s2);border-top-left-radius:26px;border-top-right-radius:26px;border:1px solid var(--line2);padding:22px 22px 30px;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.show .sheetcard{transform:translateY(0)}
+/* agent build + chips */
+.msg.build{background:var(--s1);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:6px;max-width:90%}
+.buildline{font-family:'Geist Mono';font-size:12.5px;color:var(--t3);margin-top:6px}
+.buildline.ok{color:var(--lime)}
+.chips2{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.chips2::-webkit-scrollbar{display:none}
+.chip2{flex:none;background:var(--s1);border:1px solid var(--line);border-radius:999px;padding:9px 14px;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.chip2:active{transform:scale(.97)}
+/* feature card (home, ajoutée par l'agent) */
+.feat{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-top:10px}
+.feat .ft{font-weight:700;font-size:14.5px}
+.feat .fd{font-size:12.5px;color:var(--t3);margin-top:2px}
+.feat .fdot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime);flex:none}
+/* profil */
+.prow{display:flex;align-items:center;gap:13px;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:15px;margin-top:10px;width:100%;text-align:left;color:var(--txt);font-weight:600;font-size:15px;cursor:pointer}
+.prow .pic{width:34px;height:34px;border-radius:10px;background:var(--s3);display:flex;align-items:center;justify-content:center;flex:none}
+.prow .pic svg{width:18px;height:18px;stroke:var(--t2);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.prow .pchev{margin-left:auto;color:var(--faint);font-size:18px}
+/* planner */
+.taskchip{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-top:9px;font-size:14px}
+.taskchip .ty{font-family:'Geist Mono';font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--lime);background:rgba(198,255,60,.1);border:1px solid rgba(198,255,60,.25);padding:3px 7px;border-radius:6px;flex:none}
+.taskchip .x{margin-left:auto;color:var(--faint);cursor:pointer;font-size:20px;flex:none;line-height:1}
+.blk{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:13px;margin-top:9px}
+.blk.rev{border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box}
+.blk .tm{font-family:'Geist Mono';font-size:13px;color:var(--lime);flex:none;width:46px}
+.blk .bt{font-weight:600;font-size:14px}
+.blk .bcat{font-size:11.5px;color:var(--t3);margin-top:2px}
+.ovf{margin-top:14px;border-radius:14px;padding:14px;background:rgba(224,97,60,.1);border:1px solid rgba(224,97,60,.3);font-size:13px;line-height:1.5}
+.tin{display:flex;gap:9px;margin-top:14px}
+.tin input{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:13px;padding:13px 15px;color:var(--txt);font-family:inherit;font-size:14.5px;outline:none}
+.tin .add{width:48px;height:48px;border-radius:13px;background:var(--s3);border:1px solid var(--line2);color:var(--lime);font-size:22px;flex:none;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="halo"></div>
+  <div class="grain"></div>
+
+  <!-- WELCOME -->
+  <section class="screen active center" id="welcome">
+    <div class="brand" style="position:absolute;top:24px;left:24px"><span class="dmark l"></span>Roize</div>
+    <div class="flex1"></div>
+    <div class="herophx"><img src="phoenix.png" alt="Phénix Roize"/></div>
+    <div class="flex1"></div>
+    <h1 style="text-align:center">Transforme ta<br>journée en <span class="lime">croissance.</span></h1>
+    <p class="sub" style="text-align:center">Chaque matin, la bonne action pour faire grossir ton business. Pas une to-do de plus.</p>
+    <div class="mono" style="color:var(--t3);font-size:13px;margin-top:16px">12 400 entrepreneurs profilés · 4,8 ★★★★★</div>
+    <button class="btn btn-lime" style="margin-top:22px" data-go="promise">Commencer</button>
+  </section>
+
+  <!-- PROMISE -->
+  <section class="screen center" id="promise">
+    <div class="flex1"></div>
+    <div class="kick">Déjà 12 400 profilés</div>
+    <div class="mono lime" style="font-weight:600;font-size:46px;margin-top:6px">12 400+</div>
+    <h2 style="margin-top:16px;text-align:center">Tu as le potentiel.<br>Il te manque la méthode.</h2>
+    <div class="card" style="margin-top:22px;text-align:left;width:100%">
+      <div style="font-size:14.5px;line-height:1.5">« J'ai lancé mon offre en 3 semaines. Roize a enlevé le flou — chaque matin je sais quoi faire. »</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:14px"><span style="width:34px;height:34px;border-radius:50%;background:var(--aurora);flex:none"></span><div><div style="font-weight:700;font-size:13.5px">Léa M.</div><div class="mono" style="font-size:12px;color:var(--t3)">Freelance · 2 400€/mois</div></div></div>
+    </div>
+    <div class="social" style="margin-top:16px">★★★★★ <span class="mono">4,8 · 2 300 avis</span></div>
+    <div class="flex1"></div>
+    <button class="btn btn-lime" data-go="quiz">Démarrer mon profil</button>
+  </section>
+
+  <!-- QUIZ (dynamique, adaptatif) -->
+  <section class="screen" id="quiz">
+    <button class="btn btn-ghost" id="qback" style="display:none;width:auto;align-self:flex-start;padding:6px 2px;margin-bottom:6px;font-size:14px">← Retour</button>
+    <div class="prog"><i id="qbar" style="width:0%"></i></div>
+    <div class="kick" id="qcount" style="margin-top:16px">Question 1</div>
+    <h2 id="qtitle" style="margin-top:10px"></h2>
+    <div class="sub" id="qsub" style="display:none"></div>
+    <div id="qbody"></div>
+    <div class="flex1" style="min-height:14px"></div>
+    <button class="btn btn-ghost" id="qskip" style="display:none">Passer cette question</button>
+    <button class="btn btn-aurora" id="qnext" disabled style="opacity:.4">Continuer</button>
+  </section>
+
+  <!-- LOADING -->
+  <section class="screen center" id="loading">
+    <div class="spark" style="width:120px;height:120px"><div class="glow" style="width:110px;height:110px"></div><div class="core" style="width:30px;height:30px"></div></div>
+    <h2 style="margin-top:24px;text-align:center">On calcule ton potentiel</h2>
+    <p class="sub" style="text-align:center">On croise ton profil avec 7 modèles. 20 secondes.</p>
+    <button class="btn btn-ghost" style="margin-top:20px" data-go="report">Voir mon potentiel →</button>
+  </section>
+
+  <!-- REPORT -->
+  <section class="screen" id="report">
+    <div class="kick" style="margin-top:6px">Ton rapport</div>
+    <h2 style="margin-top:8px">Potentiel de <span class="lime">croissance</span></h2>
+    <div class="card" style="margin-top:16px;text-align:center">
+      <div class="gauge" style="width:170px;height:170px"><div class="ring" style="--p:78"></div><div class="hole"><div class="num" id="repScore">78</div><div class="lab">Potentiel / 100</div></div></div>
+      <div class="sub" id="repTop" style="margin-top:4px">Élevé — tu es dans le <b class="lime">top 18%</b> des nouveaux membres.</div>
+    </div>
+    <div id="repFit"></div>
+    <div class="curve">
+      <div class="hd"><span>Revenus projetés · 6 mois</span><span class="lime mono">actuel · Roize</span></div>
+      <svg viewBox="0 0 300 110" style="width:100%;height:100px">
+        <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(198,255,60,.35)"/><stop offset="1" stop-color="rgba(198,255,60,0)"/></linearGradient></defs>
+        <path d="M0 95 C60 90 120 80 180 60 C220 48 260 30 300 14 L300 110 L0 110 Z" fill="url(#ga)"/>
+        <path class="draw" d="M0 95 C60 90 120 80 180 60 C220 48 260 30 300 14" fill="none" stroke="#C6FF3C" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M0 98 C80 96 160 94 300 90" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2" stroke-dasharray="4 5"/>
+        <circle cx="300" cy="14" r="4" fill="#C6FF3C"/>
+      </svg>
+    </div>
+    <div class="shock">
+      <div class="k">Ton 1er 1 000 €</div>
+      <div class="b" id="repShock"><span class="lime">~3 mois</span> avec le bon modèle.</div>
+    </div>
+    <div class="flex1" style="min-height:16px"></div>
+    <button class="btn btn-lime" data-go="match">Voir mes modèles</button>
+  </section>
+
+  <!-- MATCH -->
+  <section class="screen" id="match">
+    <div class="kick" style="margin-top:6px">Compatibilité · 7 modèles</div>
+    <h2 style="margin-top:8px">Tes meilleurs modèles</h2>
+    <div id="matchList"></div>
+    <div class="flex1" style="min-height:16px"></div>
+    <button class="btn btn-lime" data-go="plan">Construire mon plan</button>
+  </section>
+
+  <!-- PLAN -->
+  <section class="screen" id="plan">
+    <div class="kick" style="margin-top:6px">Ton plan · Semaine 1</div>
+    <h2 style="margin-top:8px">Tes 3 premières actions</h2>
+    <div id="planActs"></div>
+    <div class="card" style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--t3)"><span>Jalons vers 1 000 €</span><span class="mono">90 jours</span></div>
+      <svg viewBox="0 0 300 70" style="width:100%;height:60px;margin-top:6px"><path class="draw" d="M10 56 L100 44 L190 34 L280 14" fill="none" stroke="#C6FF3C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="100" cy="44" r="4" fill="#C6FF3C"/><circle cx="190" cy="34" r="4" fill="#C6FF3C"/><circle cx="280" cy="14" r="5" fill="#C6FF3C"/></svg>
+      <div style="display:flex;justify-content:space-between;font-family:'Geist Mono';font-size:11px;color:var(--t3)"><span>J0</span><span>1 000€</span></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:13px;margin-top:14px;padding:15px">
+      <span style="width:34px;height:34px;border-radius:11px;background:var(--s3);display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:var(--t3);stroke-width:1.8;fill:none"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+      <div><div style="font-weight:700;font-size:14.5px">90 jours déjà construits</div><div class="sub" style="font-size:12.5px;margin-top:2px">Débloque ton plan jour par jour.</div></div>
+    </div>
+    <div class="flex1" style="min-height:16px"></div>
+    <button class="btn btn-lime" data-go="paywall">Débloquer mon plan</button>
+  </section>
+
+  <!-- PAYWALL -->
+  <section class="screen" id="paywall">
+    <h2 style="margin-top:8px;text-align:center">Débloque ton<br>plan complet.</h2>
+    <div style="display:flex;gap:12px;margin-top:18px">
+      <div class="card" style="flex:1;padding:14px"><div class="kick" style="font-size:10px">Sans</div><svg viewBox="0 0 120 40" style="width:100%;height:36px;margin-top:6px"><path d="M0 28 C40 27 80 26 120 25" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2"/></svg></div>
+      <div class="card" style="flex:1;padding:14px;border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box"><div class="kick" style="font-size:10px;color:var(--lime)">Avec Roize</div><svg viewBox="0 0 120 40" style="width:100%;height:36px;margin-top:6px"><path d="M0 34 C40 30 80 16 120 4" fill="none" stroke="#C6FF3C" stroke-width="2.5"/></svg></div>
+    </div>
+    <div class="plan best sel" data-plan style="margin-top:22px"><span class="badge">-40%</span><div><div class="pn">Annuel</div><div class="pp">59,99 € / an · soit 5,00 €/mois</div></div><span class="r"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span></div>
+    <div class="plan" data-plan><div><div class="pn">Mensuel</div><div class="pp">9,99 € / mois</div></div><span class="r"></span></div>
+    <div class="tline">
+      <div class="tstep on"><span class="d"></span>Gratuit<br>aujourd'hui</div>
+      <div class="tstep"><span class="d"></span>Rappel<br>J5</div>
+      <div class="tstep"><span class="d"></span>Facturé<br>J7</div>
+    </div>
+    <button class="btn btn-lime" style="margin-top:18px" data-go="home">Commencer l'essai gratuit</button>
+    <div class="social">★★★★★ <span class="mono">4,8 · 2 300 avis</span></div>
+    <div class="logos"> Pay · VISA · PayPal</div>
+  </section>
+
+  <!-- HOME -->
+  <section class="screen" id="home">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px">
+      <div><div class="kick" id="homeDate">Jour 1</div><h2 style="margin-top:4px">Salut, toi</h2></div>
+      <span class="streak" id="homeStreak">◆ 1</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-top:18px"><span>Jour <span id="homeDay">1</span> · <span id="homeBiz">—</span></span><span class="mono" id="homeDoneTxt">0/4</span></div>
+    <div class="prog" style="margin-top:8px"><i id="homeProg" style="width:0%"></i></div>
+    <div class="kick" style="margin-top:24px">Prochaine action</div>
+    <div id="homeAction" style="margin-top:10px"></div>
+    <button class="btn btn-ghost" id="prepBtn" style="margin-top:14px;padding:13px">Préparer demain →</button>
+    <div class="kick" style="margin-top:18px">Ta journée</div>
+    <div class="tl" id="homeTl"></div>
+    <div id="homeFeats"></div>
+    <div class="flex1"></div>
+  </section>
+
+  <!-- CERVEAU (dynamique : score motivation = exécution × train de vie) -->
+  <section class="screen center" id="cerveau">
+    <div class="kick" style="margin-top:6px">Ton cerveau Roize</div>
+    <div class="gauge" style="margin-top:16px"><div class="ring" id="brainRing" style="--p:62"></div><div class="chole"></div><img class="phx" src="phoenix.png" alt="Phénix Roize"/><div class="gnum" id="brainNum">62</div></div>
+    <h2 id="brainLabel" style="margin-top:6px;text-align:center">Qui s'échauffe</h2>
+    <p class="sub" id="brainMsg" style="text-align:center;margin-top:6px">Coche ton état du jour — ton score s'ajuste en direct.</p>
+
+    <div class="card" style="margin-top:18px;width:100%;text-align:left">
+      <div class="kick" style="margin-bottom:2px">Check-in du jour</div>
+      <div class="ckrow"><div class="lbl">Sommeil</div><div class="chips" id="ckSleep"></div></div>
+      <div class="ckrow"><div class="lbl">Alimentation</div><div class="chips" id="ckFood"></div></div>
+      <div class="ckrow"><div class="lbl">Énergie</div><div class="chips" id="ckEnergy"></div></div>
+    </div>
+    <div id="slumpCard" style="width:100%"></div>
+
+    <div class="card spk" style="margin-top:14px;width:100%">
+      <div class="hd"><span>Régularité · 7 jours</span><span class="lime mono">6/7 actions</span></div>
+      <svg viewBox="0 0 300 70" style="width:100%;height:64px"><path class="draw" d="M10 50 L55 44 L100 48 L145 34 L190 40 L235 24 L280 30" fill="none" stroke="#C6FF3C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="280" cy="30" r="4" fill="#C6FF3C"/></svg>
+      <div style="display:flex;justify-content:space-between;font-family:'Geist Mono';font-size:11px;color:var(--t3);margin-top:4px"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    </div>
+    <div class="stats" style="width:100%">
+      <div class="stat"><div class="v" data-count="23">23</div><div class="l">actions terminées</div></div>
+      <div class="stat"><div class="v l" data-count="12">12</div><div class="l">jours de série</div></div>
+    </div>
+    <div class="flex1"></div>
+  </section>
+
+  <!-- AGENT (vivant) -->
+  <section class="screen" id="agent">
+    <div class="brand" style="margin-bottom:8px"><span class="dmark"></span>Agent Roize</div>
+    <div class="chat" id="chat"></div>
+    <div class="chips2" id="chatChips"></div>
+    <div class="chatbar"><input id="chatIn" placeholder="Demande-moi un truc…"/><button class="send" id="chatSend">↑</button></div>
+  </section>
+
+  <!-- PLANNER : préparer demain (saisie) -->
+  <section class="screen" id="planner">
+    <div class="kick" style="margin-top:6px">Préparer demain</div>
+    <h2 style="margin-top:8px">Qu'est-ce que tu veux avancer demain ?</h2>
+    <p class="sub">Balance tout ce que tu as en tête. On calera chaque tâche au bon moment.</p>
+    <div class="tin"><input id="taskIn" placeholder="Ex : relancer 3 prospects" maxlength="60"/><button class="add" id="taskAdd">+</button></div>
+    <div id="taskList"></div>
+    <button class="btn btn-ghost" id="bsToggle" style="margin-top:12px;padding:12px">Je bloque, aide-moi à réfléchir</button>
+    <div id="bsPanel" style="display:none"></div>
+    <div class="flex1" style="min-height:14px"></div>
+    <button class="btn btn-aurora" id="plannerNext" disabled style="opacity:.5">Continuer</button>
+  </section>
+
+  <!-- PLANNER : contexte -->
+  <section class="screen" id="plannerCtx">
+    <div class="kick" style="margin-top:6px">Ton contexte de demain</div>
+    <h2 style="margin-top:8px">On adapte à ta réalité.</h2>
+    <div class="ckrow" style="margin-top:22px"><div class="lbl">Temps dispo</div><div class="chips" id="hoursChips"></div></div>
+    <div class="ckrow"><div class="lbl">Où seras-tu ?</div><div class="chips" id="locChips"></div></div>
+    <div class="ckrow"><div class="lbl">Ton pic d'énergie</div><div class="chips" id="enChips"></div></div>
+    <div class="flex1"></div>
+    <button class="btn btn-lime" id="plannerGen" disabled style="opacity:.5">Générer ma journée</button>
+  </section>
+
+  <!-- PLANNER : loading -->
+  <section class="screen center" id="plannerLoad">
+    <div class="spark" style="width:120px;height:120px"><div class="glow" style="width:110px;height:110px"></div><div class="core" style="width:30px;height:30px"></div></div>
+    <h2 style="margin-top:24px;text-align:center">On cale ta journée</h2>
+    <p class="sub" id="planLoadSub" style="text-align:center">On met le focus quand t'as l'énergie…</p>
+  </section>
+
+  <!-- PLANNER : résultat -->
+  <section class="screen" id="plannerRes">
+    <div class="kick" style="margin-top:6px">Demain, calé</div>
+    <h2 style="margin-top:8px">Ta journée est prête.</h2>
+    <p class="sub" id="planResSub"></p>
+    <div id="planResSched" style="margin-top:16px"></div>
+    <div id="planOverflow"></div>
+    <div class="flex1" style="min-height:14px"></div>
+    <button class="btn btn-lime" id="planValidate">Valider — à demain</button>
+  </section>
+
+  <!-- PROFIL -->
+  <section class="screen" id="profil">
+    <div style="display:flex;align-items:center;gap:14px;margin-top:8px">
+      <span style="width:56px;height:56px;border-radius:18px;background:var(--aurora);flex:none;box-shadow:0 10px 30px -8px rgba(139,60,255,.6)"></span>
+      <div><h2 style="font-size:23px">Ton profil</h2><div class="mono" style="font-size:12px;color:var(--t3);margin-top:2px" id="profBiz">—</div></div>
+    </div>
+    <div class="stats" style="width:100%;margin-top:20px">
+      <div class="stat"><div class="v l mono" id="profStreak">1</div><div class="l">jours de série</div></div>
+      <div class="stat"><div class="v mono" id="profBrain">62</div><div class="l">score cerveau</div></div>
+    </div>
+    <div class="kick" style="margin-top:24px">Réglages</div>
+    <button class="prow"><span class="pic"><svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 0 0-1.7-1l-.4-2.6H10.5l-.4 2.6a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.4 2.6h3.5l.4-2.6a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5a7 7 0 0 0 .1-1z"/></svg></span>Mon objectif & mon profil<span class="pchev">›</span></button>
+    <button class="prow"><span class="pic"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>Notifications<span class="pchev">›</span></button>
+    <button class="prow" data-go="paywall"><span class="pic"><svg viewBox="0 0 24 24"><path d="M3 7h18v12H3z"/><path d="M3 11h18"/></svg></span>Abonnement<span class="pchev">›</span></button>
+    <button class="prow"><span class="pic"><svg viewBox="0 0 24 24"><path d="M12 17v.01M12 13a2 2 0 0 0 2-2 2 2 0 1 0-4 0M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z"/></svg></span>Aide & contact<span class="pchev">›</span></button>
+    <div class="flex1"></div>
+  </section>
+
+  <!-- TAB BAR -->
+  <nav class="tabbar" id="tabbar" style="display:none">
+    <div class="tab on" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5M5 9.5V21h14V9.5"/></svg></div>
+    <div class="tab" data-tab="cerveau"><svg viewBox="0 0 24 24"><path d="M12 3l8 5v8l-8 5-8-5V8z"/></svg></div>
+    <div class="tab" data-tab="agent"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H7l-3 3z"/></svg></div>
+    <div class="tab" data-tab="profil"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 21c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></div>
+  </nav>
+
+  <div class="confetti" id="confetti"></div>
+  <div class="toast" id="toast"></div>
+  <div class="sheet" id="tipSheet"><div class="sheetcard">
+    <div class="kick">Astuce de pro</div>
+    <div id="tipTx" style="font-size:14.5px;line-height:1.6;margin-top:10px"></div>
+    <div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-aurora" id="tipMore" style="padding:13px;flex:1">Une autre</button><button class="btn btn-lime" id="tipClose" style="padding:13px;flex:1">OK</button></div>
+  </div></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const APP=['home','cerveau','agent','profil'];
+const S={ans:{skills:[]},fi:0,brain:62,done:2,checkin:{sleep:null,food:null,energy:null},ranked:[],chosen:null,day:null,idx:0,dayDone:0,streak:1,feats:[],tipI:0,profiled:false};
+
+/* ---------- 7 MODÈLES + SCORING ---------- */
+const MODULES={
+  M1:{name:"Achat-revente malin",rev:"300–1 500 € / mois",delay:"2–6 sem.",
+     why:"Démarrage à 0€, cash rapide, parfait pour apprendre à vendre sans risque.",
+     actions:["Choisir 1 catégorie rentable (sneakers, jeux, déco…) + 3 références qui se revendent bien","Repérer 5 annonces sous-cotées sur Vinted/LBC aujourd'hui","Faire ta 1re offre d'achat sur la meilleure","Lister tes 5 premiers articles avec un prix cible","Publier ta 1re annonce de revente"]},
+  M2:{name:"Boutique en ligne",rev:"500–4 000 € / mois",delay:"1–3 mois",
+     why:"Fort potentiel de scale, idéal si tu as du budget et du temps pour tester des produits.",
+     actions:["Choisir 1 niche + 1 produit gagnant (3 critères)","Créer ta boutique : nom + 1 page produit","Trouver 1 fournisseur fiable","Écrire la fiche produit qui vend","Lancer ta 1re créa pub (15€ de test)"]},
+  M3:{name:"Vendre ton savoir",rev:"800–3 000 € / mois",delay:"3–6 sem.",
+     why:"Marge maximale, zéro stock. Ton expertise = le chemin le plus direct.",
+     actions:["Identifier le problème que tu résous, en 1 phrase","Valider ton idée avec 5 personnes","Créer le plan de ta 1re offre","Écrire ta page de vente en 1h","Pré-vendre à 3 personnes avant de tout créer"]},
+  M4:{name:"Prestation de services",rev:"1 000–4 000 € / mois",delay:"1–4 sem.",
+     why:"Le plus rapide pour générer du cash : tu vends une compétence, sans investissement.",
+     actions:["Définir ton offre claire : qui + quoi + résultat","Fixer ton tarif","Lister 20 prospects qui ont ce besoin","Envoyer 5 messages de prospection","Caler ton 1er appel découverte"]},
+  M5:{name:"Créateur & monétisation",rev:"500–5 000 € / mois",delay:"2–4 mois",
+     why:"Construit un actif durable. Idéal si tu aimes créer et as (ou veux) une audience.",
+     actions:["Choisir ta niche + ton angle unique","Définir 3 piliers de contenu","Créer 3 contenus pour cette semaine","Publier ton 1er contenu aujourd'hui","Analyser ce qui performe + doubler dessus"]},
+  M6:{name:"Business de proximité",rev:"800–3 500 € / mois",delay:"1–3 sem.",
+     why:"Demande locale forte, peu de concurrence en ligne. Parfait avec un savoir-faire manuel.",
+     actions:["Choisir ton service + ta zone","Créer ton offre + ton prix","T'inscrire sur 2 plateformes (ou flyers)","Contacter 10 prospects locaux","Décrocher ta 1re mission test"]},
+  M7:{name:"Produit digital / app",rev:"0–6 000 € / mois",delay:"2–5 mois",
+     why:"Le plus scalable. Pour les profils tech, patients, prêts à construire un vrai produit.",
+     actions:["Trouver 1 problème récurrent que tu peux outiller","Valider avec 5 utilisateurs cibles","Maquetter l'outil (no-code) en 1 écran","Construire le MVP minimal (1 fonction)","Mettre en ligne + récupérer 3 retours"]}
+};
+const CAP={M1:[3,3,2,1],M2:[0,2,3,3],M3:[3,3,3,2],M4:[3,3,2,1],M5:[3,3,2,1],M6:[3,3,2,1],M7:[1,2,3,3]};
+const TIMEM={M1:[3,2,1,1],M2:[0,1,3,3],M3:[1,2,3,3],M4:[0,2,3,3],M5:[1,2,3,3],M6:[2,3,3,2],M7:[0,0,2,3]};
+const RISK={M1:[3,2,1],M2:[1,2,3],M3:[2,3,3],M4:[3,3,2],M5:[2,2,2],M6:[3,2,1],M7:[0,1,3]};
+const SKILL={write:["M3","M5"],video:["M5"],code:["M7"],sell:["M1","M2","M4"],teach:["M3","M4"],mkt:["M2","M3","M5"],manual:["M6"]};
+function skillScore(m,sk){let s=0;if(sk.includes("none"))s=(m==="M1")?1:0;sk.forEach(k=>{if(SKILL[k]&&SKILL[k].includes(m))s+=2;});return Math.min(3,s);}
+function audScore(m,i){if(i===4)return(m==="M6"||m==="M4")?2:0;if(m==="M5")return[0,1,2,3][i]||0;if(m==="M3")return[0,0,2,3][i]||0;return 0;}
+function objScore(m,i){if(i>=2)return(["M2","M3","M7"].includes(m))?2.5:1.5;return(["M1","M4","M6"].includes(m))?2.5:1.5;}
+function scoreModules(a){
+  const out=[];
+  for(const m in MODULES){
+    const cap=CAP[m][a.capital]??1,ti=TIMEM[m][a.time]??1,sk=skillScore(m,a.skills||[]),ri=RISK[m][a.risk]??1,au=audScore(m,a.audience),ob=objScore(m,a.goal);
+    out.push({m,tot:cap*.20+ti*.20+sk*.25+ri*.15+au*.10+ob*.10});
+  }
+  const boost=(id,v)=>{const o=out.find(x=>x.m===id);if(o)o.tot+=v;};
+  if(a.capital===0&&a.time===0)boost("M1",1.2);
+  if((a.skills||[]).includes("code")&&a.risk===2&&a.time===3)boost("M7",1.0);
+  if(a.audience===3){boost("M5",.8);boost("M3",.8);}
+  if((a.skills||[]).includes("manual"))boost("M6",.7);
+  out.sort((x,y)=>y.tot-x.tot);
+  return out.map(o=>({m:o.m,score:Math.max(46,Math.min(97,Math.round(o.tot/3*100)))}));
+}
+function fitCheck(a){
+  const amb=a.goal>=2,noTime=a.time===0,noMoney=a.capital===0,noSkill=(a.skills||[]).includes("none");
+  if(amb&&noTime&&(noMoney||noSkill))return"hard";
+  if(amb&&(noTime||noSkill))return"soft";
+  return"ok";
+}
+function fitBannerHTML(lvl){
+  if(lvl==="hard")return '<div class="fitb hard"><b>Roize est cash avec toi.</b> Viser gros avec très peu de temps, sans budget ni compétence de départ, ce n&rsquo;est pas réaliste. <b>Mais</b> si tu t&rsquo;y mets pour de vrai&nbsp;: commence petit, prouve-toi 1 mois sur le modèle le plus accessible. Tu tiens, on t&rsquo;emmène loin.</div>';
+  if(lvl==="soft")return '<div class="fitb soft"><b>Honnête&nbsp;:</b> ton objectif est ambitieux vu ton temps et tes ressources. C&rsquo;est jouable, mais pose d&rsquo;abord des bases solides. Roize te cadre pour ça, jour après jour.</div>';
+  return "";
+}
+
+/* ---------- QUIZ ADAPTATIF (flow conditionnel) ---------- */
+const FLOW=[
+  {id:"sit",q:()=>"Tu en es où avec ton business ?",type:"single",opts:[
+    {label:"Je n'ai pas encore démarré",v:"deb"},
+    {label:"J'ai commencé, mais 0€ généré",v:"dem"},
+    {label:"J'ai déjà gagné de l'argent",v:"actif"},
+    {label:"J'ai un business stable (200€+/mois)",v:"avance"}]},
+  {id:"block",showIf:a=>a.sit==="deb",q:()=>"C'est quoi ton blocage principal ?",type:"single",opts:[
+    {label:"Je ne sais pas quoi vendre / quel business",v:"quoi"},
+    {label:"Je sais quoi faire, mais pas par où commencer",v:"start"},
+    {label:"Je manque de temps",v:"temps"},
+    {label:"J'ai peur de l'échec / du regard des autres",v:"peur"}]},
+  {id:"access",showIf:a=>a.sit==="deb"&&a.block==="quoi",q:()=>"Tu as déjà un atout pour démarrer ?",type:"single",opts:[
+    {label:"Une compétence (service, design, écriture…)",v:"skill"},
+    {label:"Un accès produits (fournisseur, Vinted…)",v:"prod"},
+    {label:"Rien de précis — propose-moi des pistes",v:"none"}]},
+  {id:"words",showIf:a=>!(a.sit==="deb"&&a.block==="quoi"),type:"text3",
+    q:a=>(a.sit==="actif"||a.sit==="avance")?"Ton business actuel, en 3 mots :":"Ton idée de business, en 3 mots :",ph:"liberté · ventes · voyage"},
+  {id:"since",showIf:a=>a.sit==="dem",q:()=>"Tu as lancé depuis combien de temps ?",type:"single",opts:[
+    {label:"Moins d'1 mois",v:0},{label:"1 à 6 mois",v:1},{label:"Plus de 6 mois",v:2}]},
+  {id:"frein_dem",showIf:a=>a.sit==="dem",q:()=>"Ton principal frein en ce moment ?",type:"single",opts:[
+    {label:"Pas assez de visibilité",v:"visi"},
+    {label:"Des prospects, mais personne n'achète",v:"vente"},
+    {label:"Pas régulier, je procrastine",v:"regul"},
+    {label:"Mon offre n'est pas assez claire",v:"offre"}]},
+  {id:"revenue",showIf:a=>a.sit==="actif"||a.sit==="avance",q:()=>"Tu génères combien par mois, environ ?",type:"single",opts:[
+    {label:"Moins de 100€",v:0},{label:"100 à 500€",v:1},{label:"500 à 2 000€",v:2},{label:"2 000€ et +",v:3}]},
+  {id:"regularity",showIf:a=>a.sit==="actif"||a.sit==="avance",q:()=>"Tes revenus sont plutôt :",type:"single",opts:[
+    {label:"Réguliers, prévisibles",v:"reg"},{label:"Irréguliers, en dents de scie",v:"irr"}]},
+  {id:"frein_growth",showIf:a=>a.sit==="actif"||a.sit==="avance",q:()=>"Qu'est-ce qui te freine pour passer au niveau au-dessus ?",type:"single",opts:[
+    {label:"Pas assez de clients / visibilité",v:"acq"},
+    {label:"Je suis au max de mon temps",v:"temps"},
+    {label:"Tout repose sur moi, rien n'est systématisé",v:"systeme"},
+    {label:"Mes prix sont trop bas",v:"prix"}]},
+  {id:"cat",showIf:a=>(a.sit==="actif"||a.sit==="avance")||(a.sit==="deb"&&a.block==="quoi"&&a.access&&a.access!=="none"),q:()=>"Ton business, c'est plutôt :",type:"single",opts:[
+    {label:"Achat-revente (Vinted, LBC…)",v:"M1"},
+    {label:"E-commerce / boutique",v:"M2"},
+    {label:"Formation / infoproduit",v:"M3"},
+    {label:"Freelance / services",v:"M4"},
+    {label:"Création de contenu",v:"M5"},
+    {label:"Service local / proximité",v:"M6"},
+    {label:"Produit digital / app",v:"M7"}]},
+  {id:"time",q:()=>"Combien d'heures par semaine, réalistement ?",type:"single",opts:[
+    {label:"Moins de 5h",v:0},{label:"5 à 15h",v:1},{label:"15 à 30h",v:2},{label:"30h et +",v:3}]},
+  {id:"capital",showIf:a=>a.sit==="deb"||a.sit==="dem",q:()=>"Quel budget pour démarrer ?",type:"single",opts:[
+    {label:"0€",v:0},{label:"100 à 500€",v:1},{label:"500 à 2 000€",v:2},{label:"2 000€ et +",v:3}]},
+  {id:"skills",showIf:a=>a.sit==="deb"||a.sit==="dem",type:"multi",max:3,q:()=>"Ce que tu sais déjà faire :",sub:"jusqu'à 3 choix",opts:[
+    {label:"Écrire / créer du contenu",v:"write"},{label:"Vidéo / photo",v:"video"},{label:"Coder",v:"code"},{label:"Vendre / négocier",v:"sell"},{label:"Enseigner / coacher",v:"teach"},{label:"Marketing / réseaux",v:"mkt"},{label:"Manuel / local",v:"manual"},{label:"Rien de précis",v:"none"}]},
+  {id:"goal",showIf:a=>a.sit==="deb"||a.sit==="dem",q:()=>"Ton objectif dans 6 mois ?",type:"single",opts:[
+    {label:"Mes premiers 500€/mois",v:0},{label:"1 500€/mois",v:1},{label:"3 000€/mois",v:2},{label:"5 000€/mois et +",v:3}]},
+  {id:"goal",showIf:a=>a.sit==="actif"||a.sit==="avance",q:()=>"Ton objectif maintenant ?",type:"single",opts:[
+    {label:"+50% de CA",v:2},{label:"Doubler mon CA",v:3},{label:"Scaler (×3 et +)",v:3},{label:"Stabiliser & automatiser",v:1}]}
+];
+function applies(q){return !q.showIf||q.showIf(S.ans);}
+function renderQ(){
+  while(S.fi<FLOW.length&&!applies(FLOW[S.fi]))S.fi++;
+  if(S.fi>=FLOW.length){finishQuiz();return;}
+  const q=FLOW[S.fi],appl=FLOW.filter(applies),pos=appl.indexOf(q);
+  $('#qback').style.display=pos>0?'inline-flex':'none';
+  $('#qbar').style.width=Math.round(pos/appl.length*100)+'%';
+  $('#qcount').textContent='Question '+(pos+1)+' / ~'+appl.length;
+  $('#qtitle').textContent=(typeof q.q==='function')?q.q(S.ans):q.q;
+  const sub=$('#qsub');if(q.sub){sub.textContent=q.sub;sub.style.display='block';}else sub.style.display='none';
+  const body=$('#qbody');body.innerHTML='';
+  const next=$('#qnext');next.disabled=true;next.style.opacity=.4;
+  if(q.type==='text3'){
+    const inp=document.createElement('input');inp.className='txt';inp.placeholder=q.ph||'';inp.maxLength=40;inp.value=S.ans[q.id]||'';
+    inp.addEventListener('input',()=>{S.ans[q.id]=inp.value.trim();const ok=inp.value.trim().length>=2;next.disabled=!ok;next.style.opacity=ok?1:.4;});
+    body.appendChild(inp);if(S.ans[q.id]){next.disabled=false;next.style.opacity=1;}setTimeout(()=>inp.focus(),250);
+  }else{
+    const wrap=document.createElement('div');wrap.className='opts';
+    q.opts.forEach(o=>{
+      const b=document.createElement('button');b.className='opt';b.type='button';
+      b.innerHTML='<span>'+o.label+'</span><span class="chk"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>';
+      b.addEventListener('click',()=>{
+        if(q.type==='multi'){
+          const arr=S.ans.skills,i=arr.indexOf(o.v);
+          if(i>-1){arr.splice(i,1);b.classList.remove('sel');}else{if(arr.length>=(q.max||3))return;arr.push(o.v);b.classList.add('sel');}
+          const ok=arr.length>0;next.disabled=!ok;next.style.opacity=ok?1:.4;
+        }else{wrap.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');S.ans[q.id]=o.v;next.disabled=false;next.style.opacity=1;}
+      });
+      if(q.type==='multi'&&S.ans.skills.includes(o.v))b.classList.add('sel');
+      if(q.type!=='multi'&&S.ans[q.id]===o.v)b.classList.add('sel');
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+    if(q.type==='multi'&&S.ans.skills.length){next.disabled=false;next.style.opacity=1;}
+    if(q.type!=='multi'&&S.ans[q.id]!==undefined){next.disabled=false;next.style.opacity=1;}
+  }
+}
+function advance(){S.fi++;while(S.fi<FLOW.length&&!applies(FLOW[S.fi]))S.fi++;if(S.fi>=FLOW.length){finishQuiz();return;}renderQ();}
+function goBack(){let i=S.fi-1;while(i>=0&&!applies(FLOW[i]))i--;if(i<0)return;S.fi=i;renderQ();}
+function finishQuiz(){
+  const a=S.ans;
+  if(a.goal===undefined)a.goal=(a.sit==='avance'||a.sit==='actif')?2:0;
+  if(a.capital===undefined)a.capital=0;
+  if(a.time===undefined)a.time=1;
+  a.risk=(a.block==='peur')?0:(a.goal>=2?2:1);
+  S.ranked=scoreModules(a);
+  if(a.cat){const idx=S.ranked.findIndex(x=>x.m===a.cat);if(idx>0){const it=S.ranked.splice(idx,1)[0];it.score=Math.max(it.score,90);S.ranked.unshift(it);}}
+  S.chosen=S.ranked[0].m;S.day=null;S.profiled=true;saveState();
+  show('loading');clearTimeout(lt);lt=setTimeout(()=>show('report'),2200);
+}
+
+/* ---------- REPORT / MATCH / PLAN ---------- */
+function esc(s){return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+function matchCard(r,i){
+  const M=MODULES[r.m],p=r.score;
+  const topcss=i===0?';border-color:transparent;background:linear-gradient(var(--s2),var(--s2)) padding-box, var(--aurora) border-box':'';
+  return '<div class="rcard card'+(i===0?' top':'')+'" style="margin-top:'+(i?12:14)+'px'+topcss+'">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="mono" style="color:var(--t3);font-size:12px">N°'+(i+1)+'</span>'
+    +'<span class="mono '+(i===0?'lime':'')+'" style="font-size:20px;font-weight:700"><b class="scoreN" data-to="'+p+'" style="font-weight:inherit">0</b>/100</span></div>'
+    +'<div style="font-weight:700;font-size:17px;margin-top:4px">'+M.name+'</div>'
+    +'<div class="barwrap"><i data-w="'+p+'"></i></div>'
+    +'<div class="sub" style="font-size:13px;margin-top:10px">'+M.why+'</div>'
+    +'<div class="tag" style="background:var(--s3);color:var(--t2);margin-top:12px">'+M.rev+' · '+M.delay+'</div></div>';
+}
+function planRow(a,i){
+  const days=['Aujourd&rsquo;hui · 15 min','Demain · 20 min','J+3 · 15 min'];
+  const mark=i===0?'<span style="width:26px;height:26px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--lime-ink);stroke-width:2.6;fill:none"><path d="M5 12l5 5 9-10"/></svg></span>':'<span style="width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);flex:none"></span>';
+  return '<div class="card" style="display:flex;align-items:center;gap:13px;margin-top:'+(i?12:16)+'px;padding:15px">'+mark+'<div><div style="font-weight:600;font-size:15px">'+a+'</div><div class="mono" style="font-size:12px;color:var(--t3);margin-top:2px">'+days[i]+'</div></div></div>';
+}
+function compute(){
+  const top=S.ranked.slice(0,3);if(!top.length)return;
+  const best=MODULES[top[0].m],score=top[0].score;
+  const topPct=Math.max(4,30-Math.round(score/4));
+  $('#repScore').setAttribute('data-count',score);
+  const w=(S.ans.words||'').trim();
+  $('#repTop').innerHTML=(w?'Ton cap : <b class="lime">'+esc(w)+'</b>.<br>':'')+'Ton meilleur modèle te score <b class="lime">'+score+'/100</b> — tu es dans le top '+topPct+'%.';
+  $('#repFit').innerHTML=fitBannerHTML(fitCheck(S.ans));
+  $('#repShock').innerHTML='<span class="lime">'+best.delay+'</span> visé pour tes premiers résultats.';
+  $('#matchList').innerHTML=top.map((r,i)=>matchCard(r,i)).join('')+'<div class="kick" style="margin-top:14px;text-align:center">+ 4 autres modèles analysés</div>';
+  $('#planActs').innerHTML=best.actions.slice(0,3).map((a,i)=>planRow(a,i)).join('');
+}
+
+/* ---------- CERVEAU (motivation = exécution × train de vie) ---------- */
+const SLEEP_PTS={bad:6,ok:18,good:30},FOOD_PTS={skip:4,meh:12,good:20},EN_PTS={low:6,ok:16,high:25};
+const CK_SLEEP=[{label:'Mal',v:'bad'},{label:'Bof',v:'ok'},{label:'Bien',v:'good'}];
+const CK_FOOD=[{label:'Sauté',v:'skip'},{label:'Vite fait',v:'meh'},{label:'Équilibré',v:'good'}];
+const CK_EN=[{label:'Dans le dur',v:'low'},{label:'Moyen',v:'ok'},{label:'Au top',v:'high'}];
+function lifeScore(){const c=S.checkin;if(c.sleep==null||c.food==null||c.energy==null)return null;return SLEEP_PTS[c.sleep]+FOOD_PTS[c.food]+EN_PTS[c.energy];}
+function motivation(){const exec=S.brain||62,life=lifeScore();if(life==null)return exec;return Math.round(exec*0.55+(life/75*100)*0.45);}
+function slump(){const c=S.checkin;if(motivation()>=58)return null;
+  if(c.sleep==='bad')return{cause:'Tu manques de sommeil — c&rsquo;est ça qui plombe ta motivation, pas ta volonté.',fix:'Vise <b>7h cette nuit</b> et coupe les écrans 30 min avant. Demain ton score remonte presque tout seul.'};
+  if(c.food==='skip')return{cause:'Tu sautes des repas. Le cerveau tourne au carburant, pas à la motivation.',fix:'<b>Mange un vrai truc maintenant</b> (protéine + sucre lent). Recheck ton énergie dans 1h.'};
+  if(c.energy==='low')return{cause:'Ton énergie est basse aujourd&rsquo;hui — jour sans, ça arrive.',fix:'Fais juste <b>1 micro-action de 10 min</b>. L&rsquo;élan revient en agissant, pas en attendant.'};
+  return{cause:'Petite baisse de régime, rien de grave.',fix:'Reprends par <b>la tâche la plus facile</b> de ta journée pour relancer la machine.'};}
+function renderSlump(){const box=$('#slumpCard'),sl=slump();box.innerHTML=sl?'<div class="slump"><div class="st">Coup de mou détecté</div><div class="sc">'+sl.cause+'</div><div class="sf">→ '+sl.fix+'</div></div>':'';}
+function renderCheckin(){
+  const mk=(boxId,arr,key)=>{const box=$('#'+boxId);if(!box)return;box.innerHTML='';
+    arr.forEach(o=>{const b=document.createElement('button');b.className='chip'+(S.checkin[key]===o.v?' sel':'');b.textContent=o.label;
+      b.addEventListener('click',()=>{S.checkin[key]=o.v;renderBrain();});box.appendChild(b);});};
+  mk('ckSleep',CK_SLEEP,'sleep');mk('ckFood',CK_FOOD,'food');mk('ckEnergy',CK_EN,'energy');}
+function renderBrain(){
+  const s=motivation();renderCheckin();renderSlump();
+  tween($('#brainNum'),s,$('#brainRing'),900);
+  $('#brainLabel').textContent=s<32?'En veille':s<58?'Qui s\'échauffe':s<82?'Bien exploité':'En feu';
+  const done=S.checkin.sleep&&S.checkin.food&&S.checkin.energy;
+  $('#brainMsg').textContent=done?(s<58?'Ton train de vie te freine aujourd\'hui — vois en dessous.':'Bon rythme. Continue, tu construis.'):'Coche ton état du jour — ton score s\'ajuste en direct.';
+  saveState();}
+
+function countUp(el,to,ring){ if(!el)return; const dur=1100; let t0=null;
+  function f(now){ if(t0===null)t0=now; const t=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-t,3), v=Math.round(to*e);
+    el.textContent=v; if(ring) ring.style.setProperty('--p',v); if(t<1) requestAnimationFrame(f); }
+  requestAnimationFrame(f); }
+function tween(el,to,ring,dur){ if(!el)return; to=Math.round(to); const from=parseInt(el.textContent,10)||0; const d=dur||900;
+  if(from===to){ el.textContent=to; if(ring) ring.style.setProperty('--p',to); return; }
+  let t0=null;
+  function f(now){ if(t0===null)t0=now; const t=Math.min(1,(now-t0)/d), e=1-Math.pow(1-t,3), v=Math.round(from+(to-from)*e);
+    el.textContent=v; if(ring) ring.style.setProperty('--p',v); if(t<1) requestAnimationFrame(f); }
+  requestAnimationFrame(f); }
+function animateScreen(id){ const sc=document.getElementById(id); if(!sc)return;
+  sc.querySelectorAll('[data-count]').forEach(el=>{ const to=+el.getAttribute('data-count'); const g=el.closest('.gauge'); countUp(el,to,g?g.querySelector('.ring'):null); });
+  sc.querySelectorAll('.scoreN[data-to]').forEach(el=>countUp(el,+el.getAttribute('data-to'),null));
+  sc.querySelectorAll('.barwrap>i[data-w]').forEach(i=>{ i.style.width='0'; requestAnimationFrame(()=>{ i.style.width=i.getAttribute('data-w')+'%'; }); }); }
+function show(id){
+  if(!document.getElementById(id)) return;
+  if(id==='report') compute();
+  $$('.screen').forEach(s=>s.classList.toggle('active', s.id===id));
+  $('#tabbar').style.display = APP.includes(id)?'flex':'none';
+  $$('#tabbar .tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===id));
+  const sc=$('#'+id); if(sc) sc.scrollTop=0;
+  if(id==='cerveau') renderBrain();
+  if(id==='home') renderHome();
+  if(id==='agent') initAgent();
+  if(id==='profil') renderProfil();
+  animateScreen(id);
+}
+let lt;
+function startQuiz(){ S.ans={skills:[]}; S.fi=0; renderQ(); show('quiz'); }
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>{
+  if(b.disabled) return;
+  const g=b.dataset.go;
+  if(g==='quiz'){ startQuiz(); return; }
+  if(g==='loading'){ show('loading'); clearTimeout(lt); lt=setTimeout(()=>show('report'),2200); return; }
+  show(g);
+}));
+$$('#tabbar .tab').forEach(t=>t.addEventListener('click',()=>show(t.dataset.tab)));
+$('#qnext').addEventListener('click',advance);
+$('#qskip').addEventListener('click',advance);
+$('#qback').addEventListener('click',goBack);
+$$('[data-plan]').forEach(p=>p.addEventListener('click',()=>{ $$('[data-plan]').forEach(x=>x.classList.remove('sel')); p.classList.add('sel'); }));
+/* ---------- TOAST / CONFETTI ---------- */
+function toast(t){const x=$('#toast');if(!x)return;x.textContent=t;x.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>x.classList.remove('show'),1700);}
+function confetti(n){const box=$('#confetti');if(!box)return;box.innerHTML='';const cols=['#C6FF3C','#8B3CFF','#4F6BFF','#E24BD0'];
+  for(let i=0;i<(n||30);i++){const p=document.createElement('i');p.style.left=(Math.random()*100).toFixed(1)+'%';p.style.background=cols[i%cols.length];p.style.animationDelay=(Math.random()*.25).toFixed(2)+'s';p.style.animationDuration=(1.3+Math.random()*.7).toFixed(2)+'s';p.style.transform='rotate('+Math.floor(Math.random()*360)+'deg)';box.appendChild(p);}
+  setTimeout(()=>{box.innerHTML='';},2500);}
+
+/* ---------- JOURNÉE (focus blocks par modèle) ---------- */
+const DAY={
+  M1:[{cat:"Chasse aux bonnes affaires",dur:"2h",rev:1},{cat:"Mise en ligne d'annonces",dur:"45min"},{cat:"Négo & réponses acheteurs",dur:"30min"},{cat:"Bilan du jour",dur:"10min"}],
+  M2:[{cat:"Recherche de produit gagnant",dur:"1h30",rev:1},{cat:"Boutique & fiche produit",dur:"1h"},{cat:"Créa pub & ciblage",dur:"1h"},{cat:"Analyse des chiffres",dur:"20min"}],
+  M3:[{cat:"Affiner ton offre & ton angle",dur:"1h",rev:1},{cat:"Création de contenu / page",dur:"1h30"},{cat:"Visibilité & audience",dur:"45min"},{cat:"Bilan",dur:"10min"}],
+  M4:[{cat:"Prospection clients",dur:"1h",rev:1},{cat:"Production / livrable",dur:"2h"},{cat:"Visibilité (portfolio, posts)",dur:"30min"},{cat:"Bilan",dur:"10min"}],
+  M5:[{cat:"Idéation & script",dur:"45min"},{cat:"Création (tournage/écriture)",dur:"1h30",rev:1},{cat:"Publication & engagement",dur:"45min"},{cat:"Analyse des perfs",dur:"15min"}],
+  M6:[{cat:"Prospection locale",dur:"1h",rev:1},{cat:"Missions / prestations",dur:"2h"},{cat:"Avis & bouche-à-oreille",dur:"30min"},{cat:"Bilan",dur:"10min"}],
+  M7:[{cat:"Build produit (1 feature)",dur:"2h",rev:1},{cat:"Retours utilisateurs",dur:"45min"},{cat:"Visibilité (build in public)",dur:"30min"},{cat:"Bilan",dur:"15min"}]
+};
+const NICHE_TIPS={
+  M1:["Active les alertes sur tes mots-clés : les bonnes affaires partent en moins de 60s, impossible à battre à la main.","Cherche les fautes d'orthographe dans les annonces (nikke, ipone, addiddas) : aucune alerte ne les capte, zéro concurrence.","Arbitrage : achète sur Vinted, revends sur BackMarket/eBay avec une fiche pro → +25-40% de marge sur la confiance.","iPhone/Switch 'écran fissuré' à 40-60€ + réparation locale = +80-120€ net par pièce.","Achète les lots complets sur Leboncoin (même 30% d'invendable) : le vendeur veut vider → -40% négocié.","Photos fond blanc + lumière naturelle = ventes 2× plus rapides qu'un fond coloré."],
+  M2:["Négocie la livraison offerte plutôt qu'une remise prix : +8-12 points de marge, et le fournisseur dit oui plus facilement.","Valide ton produit sur un subreddit niche AVANT de payer en pub (0€ de budget, juste des posts d'aide).","Bundle systématiquement (un 'kit') : ton panier moyen monte sans changer de fournisseur ni de trafic.","Modèle hybride : stocke 50-100 best-sellers chez le fournisseur qui expédie → meilleure marge, zéro logistique.","Commande minimale garantie au fournisseur = -27% sur le pricing en moyenne."],
+  M3:["Vends un atelier à 27-47€ AVANT de créer la formation : pas 10 ventes en 72h ? Le sujet ne vaut pas 3 semaines de taf.","Ne vends pas de l'info (Google est gratuit) : vends une transformation chiffrée ('0 à 1000 abonnés en 30j').","Glisse un upsell 'coaching 1h à 197€' dans ton tunnel : 8-12% cliquent = du CA sans rien produire de plus.","5 jours d'emails 100% utiles (zéro vente) avant un lancement → ventes du J1 ×3.","Paiement en 3× sans frais : tu convertis 25-30% de ceux qui bloquaient sur le prix plein."],
+  M4:["Toujours 3 offres (mini/standard/premium) : 70% prennent le milieu → fais-en ton offre la plus rentable.","Passe en retainer plutôt qu'au TJM : plus de récurrent, moins d'heures, plus de tréso.","Ancre ton prix sur un CDI : 'un CMO junior = 45K€/an, moi c'est 2 500€/mois' → le client calcule la promo tout seul.","Le client accepte ton prix direct ? T'as sous-facturé. +20% à la prochaine propal.","Clause 'résultat garanti ou remboursé' : +30% de conversions, et moins de 2% de remboursements réels."],
+  M5:["Fais de l'UGC B2B : pitch les SaaS qui ont déjà des démos en pub → tu sais qu'ils achètent.","Facture les droits Spark Ads SÉPARÉMENT : laisser tourner tes vidéos en pub = +50-100% du prix.","Lance un challenge payant à 47-97€ avec 20-30 inscrits : tu monétises AVANT d'avoir 10K abonnés.","Poste 2×/jour pendant 14j au lancement : l'algo récompense la vélocité initiale.","Sauvegarde les vidéos de ta niche : l'algo te pousse dans ce feed."],
+  M6:["Demande l'avis Google dans les 24h (pic de satisfaction) : un SMS auto double ton taux de réponse.","Mets un lien Calendly dans ta fiche Google : réserver sans appeler = +40% de conversion.","Remplis toi-même la Q&R de ta fiche Google avec tes 5 objections : tu convertis les hésitants.","Vise l'ultra-local ('plombier Lyon 6') dans ta description : tu bats les agences trop larges.","Abonnement mensuel pour le récurrent (ménage, jardin) : les abonnés restent 3× plus longtemps."],
+  M7:["Landing page + 20 signups en 30j AVANT d'écrire une ligne de code. Échec ? Tu viens d'économiser 2 mois de dev.","Pré-vends 10 accès 'fondateur' (120€/an) : tu valides la WTP et tu fais 1200€ de tréso avant le 1er sprint.","Affiche l'annuel en 1er avec '2 mois offerts' : 30-50% le choisissent → churn ÷4.","Vise les 'boring niches' (dentistes, ramoneurs, restos) : ils paient 100-1000€/mois et changent d'outil tous les 5 ans.","Sonde les churnés avec 1 question ('qu'est-ce qui t'a manqué ?') : ça vaut plus que 10 interviews, et c'est gratuit."]
+};
+function curTips(){return NICHE_TIPS[S.chosen||'M4']||NICHE_TIPS.M4;}
+function popTip(){const t=curTips();if(!t.length)return;$('#tipTx').textContent=t[S.tipI%t.length];S.tipI++;$('#tipSheet').classList.add('show');}
+
+/* ---------- HOME / JOURNÉE INTERACTIVE ---------- */
+function buildDay(){S.chosen=S.chosen||(S.ranked[0]&&S.ranked[0].m)||'M4';S.day=(DAY[S.chosen]||DAY.M4).map(b=>({cat:b.cat,dur:b.dur,rev:b.rev,done:false}));S.idx=0;S.dayDone=0;}
+function renderHome(){
+  if(!S.day)buildDay();
+  const M=MODULES[S.chosen],total=S.day.length;
+  $('#homeBiz').textContent=M.name;
+  $('#homeStreak').textContent='◆ '+S.streak;
+  $('#homeDay').textContent=S.streak;
+  $('#homeDoneTxt').textContent=S.dayDone+'/'+total;
+  $('#homeProg').style.width=Math.round(S.dayDone/total*100)+'%';
+  const ac=$('#homeAction');
+  if(S.idx>=total){
+    ac.innerHTML='<div class="action"><span class="tag">Journée bouclée</span><div class="ti" style="margin-top:12px">Tu as tenu ta journée.</div><div class="mt">Ton cerveau a bossé. Valide pour faire grimper ta série.</div><button class="btn btn-lime" id="validDay" style="margin-top:16px;padding:15px">Valider ma journée (+1 série)</button></div>';
+    $('#validDay').addEventListener('click',validateDay);
+  }else{
+    const b=S.day[S.idx];
+    ac.innerHTML='<div class="action"><div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">'+(b.rev?'Créneau qui rapporte':'≈ '+b.dur)+'</span><span class="mono" style="font-size:12px;color:var(--t3)">Action '+(S.idx+1)+'/'+total+'</span></div><div class="ti">'+b.cat+'</div><div class="mt">Bloque ~'+b.dur+' là-dessus, à ton rythme.</div><div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-lime" id="doneAct" style="padding:15px;flex:1.5">C\'est plié</button><button class="btn btn-aurora" id="tipAct" style="padding:15px;flex:1">Astuce</button></div></div>';
+    $('#doneAct').addEventListener('click',completeAction);
+    $('#tipAct').addEventListener('click',popTip);
+  }
+  $('#homeTl').innerHTML=S.day.map((b,n)=>{const now=n===S.idx;return '<div class="row'+(b.done?' done':'')+(now?' now':'')+'"><span class="dot'+(b.done?' done':'')+'"></span><div><div class="tm mono">'+b.dur+'</div><div class="tt">'+b.cat+'</div></div></div>';}).join('');
+  renderFeats();saveState();
+}
+function renderFeats(){const box=$('#homeFeats');if(!box)return;if(!S.feats.length){box.innerHTML='';return;}
+  box.innerHTML='<div class="kick" style="margin-top:22px">Tes modules (ajoutés par l\'agent)</div>'+S.feats.map(f=>'<div class="feat"><div><div class="ft">'+f.t+'</div><div class="fd">'+f.d+'</div></div><span class="fdot"></span></div>').join('');}
+function completeAction(){S.day[S.idx].done=true;S.dayDone++;S.idx++;S.brain=Math.min(100,S.brain+9);confetti(34);toast('Bloc plié — ton cerveau monte');renderHome();}
+function validateDay(){S.streak++;S.idx=0;S.dayDone=0;S.day.forEach(b=>b.done=false);S.brain=Math.min(100,S.brain+4);S.checkin={sleep:null,food:null,energy:null};confetti(26);toast('Série '+S.streak+' jours — tu construis');renderHome();}
+
+/* ---------- AGENT (vivant, + hook IA réelle si proxy) ---------- */
+const ROIZE_API=""; // URL d'un proxy Gemini -> rempli au déploiement. Vide = fallback déterministe local.
+const POOL=[
+  {k:["vinted","vente","revente","achat","stock","article","produit"],t:"Tracker de ventes",d:"Ventes, marge & stock en temps réel"},
+  {k:["marge","prix","calcul","bénéf","benef","rentab","cout","coût"],t:"Calculateur de marge",d:"Marge nette par produit en 1 tap"},
+  {k:["contenu","post","video","vidéo","calendrier","planning","reseau","réseau","insta","tiktok"],t:"Calendrier de contenu",d:"Planifie & programme ta semaine"},
+  {k:["prospect","client","crm","relance","lead","dm","message"],t:"Mini-CRM prospects",d:"Prospects + relances automatiques"},
+  {k:["objectif","goal","ca","chiffre","revenu","progress","tracker","suivi"],t:"Tracker d'objectif",d:"Ta progression vers ton CA cible"},
+  {k:["facture","devis","compta","paiement"],t:"Devis & factures",d:"Devis et factures en 30 secondes"},
+  {k:["habitude","routine","matin","rappel","notif"],t:"Routine du matin",d:"Ton rituel + rappels intelligents"}
+];
+function pickFeature(txt){const t=txt.toLowerCase();let best=null,bs=0;POOL.forEach(f=>{let s=0;f.k.forEach(k=>{if(t.includes(k))s++;});if(s>bs){bs=s;best=f;}});return best||{t:"Module sur-mesure",d:"Une fonctionnalité taillée pour ta demande"};}
+function detectIntent(t){t=t.toLowerCase();
+  if(/impr[eé]vu|r[ée]organi|recale|replanifie|change.*journ|mon planning|caler ma|pr[ée]pare.*demain/.test(t))return"replan";
+  if(/astuce|conseil|tip|tuyau|hack/.test(t))return"tip";
+  if(/\?|comment|pourquoi|combien|c'est quoi|c est quoi|quel|quelle|est-ce|dois-je|faut-il|par quoi|par o[uù]|j'arrive pas|je sais pas/.test(t))return"question";
+  if(/^(salut|hello|coucou|hey|bonjour|yo|[çc]a va|merci|ok|cool|wesh|slt)\b/.test(t.trim()))return"greet";
+  return"feature";}
+function answerQuestion(){const M=MODULES[S.chosen||'M4'];const a=[
+  "Pour "+M.name.toLowerCase()+", fais ta tâche qui rapporte EN PREMIER chaque jour — le reste suit. Ta journée est déjà calée pour ça.",
+  "La clé pour toi : de la régularité sur ton créneau qui rapporte. Une action par jour, mais tous les jours. Ton Cerveau te le rendra.",
+  "Concentre-toi sur 1 seule chose à la fois — c'est tout l'intérêt de Roize. Ouvre ta Journée, ta prochaine action t'attend.",
+  "Commence petit mais commence aujourd'hui : coche ta 1re action, et laisse Roize cadrer la suite."];
+  return a[Math.floor(Math.random()*a.length)];}
+function botMsg(t){const m=document.createElement('div');m.className='msg bot';m.textContent=t;$('#chat').appendChild(m);$('#chat').scrollTop=$('#chat').scrollHeight;}
+function usrMsg(t){const m=document.createElement('div');m.className='msg usr';m.textContent=t;$('#chat').appendChild(m);$('#chat').scrollTop=$('#chat').scrollHeight;}
+function agentBuild(txt){const f=pickFeature(txt),wrap=document.createElement('div');wrap.className='msg build';
+  wrap.innerHTML='<div style="font-weight:700;margin-bottom:4px">Je construis : '+f.t+'</div>';$('#chat').appendChild(wrap);$('#chat').scrollTop=$('#chat').scrollHeight;
+  const M=MODULES[S.chosen||'M4'];
+  const steps=["Je cherche dans le pool de modules Roize…","Module « "+f.t+" » trouvé — pas de réinvention","J'adapte à ton business ("+M.name+")…","Je câble & je déploie sur ton app…"];let i=0;
+  const tick=()=>{const line=document.createElement('div');line.className='buildline'+(i===steps.length-1?' ok':'');line.textContent=(i===steps.length-1?'✓ ':'› ')+steps[i];wrap.appendChild(line);$('#chat').scrollTop=$('#chat').scrollHeight;i++;
+    if(i<steps.length)setTimeout(tick,650);else setTimeout(()=>{if(!S.feats.find(x=>x.t===f.t))S.feats.push(f);saveState();botMsg('C\'est en ligne ! « '+f.t+' » est ajouté à ta journée. Va voir l\'onglet Journée.');toast(f.t+' ajouté');},700);};
+  setTimeout(tick,500);}
+async function aiReply(txt){ if(!ROIZE_API)return null;
+  try{const r=await fetch(ROIZE_API+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:txt,profile:S.ans,module:S.chosen})});const j=await r.json();return j.reply||null;}catch(e){return null;}}
+function sendChat(){const inp=$('#chatIn'),v=inp.value.trim();if(!v)return;inp.value='';usrMsg(v);const intent=detectIntent(v);
+  setTimeout(async()=>{
+    const ai=await aiReply(v);if(ai){botMsg(ai);return;}
+    if(intent==='feature'){botMsg('Reçu. Je te construis ça et je l\'ajoute à ton app.');setTimeout(()=>agentBuild(v),450);}
+    else if(intent==='replan'){botMsg('Un imprévu, ça se gère. Je t\'ouvre « Préparer demain » : balance tes tâches + ton temps dispo, je réorganise tout au carré.');setTimeout(openPlanner,700);}
+    else if(intent==='tip'){botMsg('Tiens, une astuce de pro pour toi.');setTimeout(popTip,350);}
+    else if(intent==='question'){botMsg(answerQuestion());}
+    else{botMsg('Yes. Je peux : te coder une fonctionnalité, te filer une astuce de pro, répondre sur ton business, ou recaler ta journée. Pioche en dessous ou écris-moi.');}
+  },340);}
+let agentInit=false;
+function initAgent(){if(agentInit)return;agentInit=true;
+  botMsg('Salut. Je suis ton agent Roize. Je peux coder une fonctionnalité et l\'ajouter à ton app, te filer des astuces de pro, ou t\'aider à organiser ta journée. Dis-moi, ou pioche une idée en dessous.');
+  const CHIPS=["un suivi de mes ventes","un tracker d'objectif","une astuce de pro","par quoi je commence ?","réorganiser ma journée"];
+  const box=$('#chatChips');box.innerHTML='';CHIPS.forEach(c=>{const b=document.createElement('button');b.className='chip2';b.textContent=c;b.addEventListener('click',()=>{$('#chatIn').value=c;sendChat();});box.appendChild(b);});}
+
+/* ---------- PLANNER : préparer demain ---------- */
+const HOURS=[{l:"~2h",v:2},{l:"~4h",v:4},{l:"~6h",v:6},{l:"8h+",v:8}];
+const LOCS=[{l:"Chez moi",v:"home"},{l:"Dehors",v:"out"},{l:"En déplacement",v:"move"}];
+const ENS=[{l:"Le matin",v:"am"},{l:"L'aprem",v:"pm"},{l:"Le soir",v:"eve"}];
+let P={tasks:[],hours:null,loc:null,en:null};
+function taskType(t){t=t.toLowerCase();
+  if(/appel|call|relanc|prospect|client|rdv|rendez|n[ée]go|vendre|message|dm|mail.*client/.test(t))return"calls";
+  if(/[ée]cri|r[ée]dig|cr[ée]e|cr[ée]a|page|produit|build|code|dev|design|monte|tourne|vid[ée]o|contenu|post|script|maquette/.test(t))return"deep";
+  if(/factur|mail|compta|admin|range|trie|paperass|d[ée]clar|devis/.test(t))return"admin";
+  return"quick";}
+const TYLAB={calls:"contact",deep:"focus",admin:"admin",quick:"rapide"};
+function renderTasks(){const box=$('#taskList');box.innerHTML='';
+  P.tasks.forEach((t,i)=>{const d=document.createElement('div');d.className='taskchip';d.innerHTML='<span class="ty">'+TYLAB[taskType(t)]+'</span><span style="flex:1">'+t+'</span><span class="x">×</span>';
+    d.querySelector('.x').addEventListener('click',()=>{P.tasks.splice(i,1);renderTasks();});box.appendChild(d);});
+  const nx=$('#plannerNext');nx.disabled=!P.tasks.length;nx.style.opacity=P.tasks.length?1:.5;}
+function addTask(){const i=$('#taskIn'),v=i.value.trim();if(v.length<2)return;P.tasks.push(v);i.value='';renderTasks();i.focus();}
+function openPlanner(){P={tasks:[],hours:null,loc:null,en:null};renderTasks();const bp=$('#bsPanel');bp.style.display='none';bp.innerHTML='';$('#bsToggle').textContent='Je bloque, aide-moi à réfléchir';show('planner');setTimeout(()=>$('#taskIn').focus(),250);}
+const BS_PRIO=["Rentrer du cash vite","Avancer un gros chantier","Me rendre visible","Vider l'admin qui traîne"];
+function renderBrainstorm(){const box=$('#bsPanel');const acts=(S.chosen&&DAY[S.chosen])?DAY[S.chosen]:[];
+  const ideas=acts.map(a=>a.cat).concat(["Relancer les gens sans réponse","Lister ce que tu repousses depuis 3 jours"]);
+  box.innerHTML='<div class="card" style="margin-top:12px"><div style="font-weight:700;font-size:15px">C\'est quoi ta priorité demain ?</div><div class="sub" style="font-size:13px;margin-top:4px">Choisis un cap, le reste suit.</div><div id="bsPrio" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"></div><div class="kick" style="margin-top:14px">Ou pioche une piste concrète :</div><div id="bsIdeas"></div></div>';
+  const pr=$('#bsPrio');BS_PRIO.forEach(l=>{const b=document.createElement('button');b.className='chip2';b.textContent=l;b.addEventListener('click',()=>{P.tasks.push(l);renderTasks();toast('Ajouté à ta liste');});pr.appendChild(b);});
+  const id=$('#bsIdeas');ideas.forEach(t=>{const b=document.createElement('button');b.className='prow';b.style.marginTop='8px';b.innerHTML='<span style="flex:1">'+t+'</span><span class="pchev">+</span>';b.addEventListener('click',()=>{P.tasks.push(t);renderTasks();toast('Ajouté à ta liste');});id.appendChild(b);});}
+function renderCtxChips(){const row=(boxId,arr,key)=>{const box=$('#'+boxId);box.innerHTML='';arr.forEach(o=>{const b=document.createElement('button');b.className='chip';b.textContent=o.l;b.addEventListener('click',()=>{box.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');P[key]=o.v;const g=$('#plannerGen'),ok=P.hours!=null&&P.loc&&P.en;g.disabled=!ok;g.style.opacity=ok?1:.5;});box.appendChild(b);});};
+  row('hoursChips',HOURS,'hours');row('locChips',LOCS,'loc');row('enChips',ENS,'en');}
+function buildTomorrow(){const startH=P.en==='am'?8:P.en==='pm'?13:17,capMin=P.hours*60,order={deep:0,calls:1,quick:2,admin:3};
+  let tasks=P.tasks.map(t=>({t,ty:taskType(t)})).sort((a,b)=>order[a.ty]-order[b.ty]);
+  if(P.loc!=='home')tasks.sort((a,b)=>(a.ty==='calls'?0:1)-(b.ty==='calls'?0:1));
+  const dur={deep:90,calls:30,admin:30,quick:20};let mins=0,h=startH,m=0;const blocks=[],overflow=[];
+  const fmt=(H,M)=>(H<10?'0':'')+H+'h'+(M?(M<10?'0':'')+M:'');
+  tasks.forEach((task,i)=>{const d=dur[task.ty];if(mins+d>capMin){overflow.push(task.t);return;}blocks.push({tm:fmt(h,m),t:task.t,ty:task.ty,dur:d});mins+=d;m+=d;while(m>=60){m-=60;h++;}if(task.ty==='deep'&&i<tasks.length-1){m+=15;while(m>=60){m-=60;h++;}}});
+  const loct=P.loc==='home'?'chez toi':P.loc==='out'?'en vadrouille':'en déplacement';
+  $('#planResSub').textContent=blocks.length+' bloc'+(blocks.length>1?'s':'')+' calé'+(blocks.length>1?'s':'')+' sur ~'+P.hours+'h, '+loct+'.';
+  $('#planResSched').innerHTML=blocks.map(b=>'<div class="blk'+(b.ty==='deep'?' rev':'')+'"><div class="tm">'+b.tm+'</div><div><div class="bt">'+b.t+'</div><div class="bcat">'+TYLAB[b.ty]+' · ~'+b.dur+'min</div></div></div>').join('');
+  $('#planOverflow').innerHTML=overflow.length?'<div class="ovf"><b>Trop pour tes ~'+P.hours+'h</b> : '+overflow.length+' tâche'+(overflow.length>1?'s reportées':' reportée')+' à un autre jour ('+overflow.join(', ')+'). Mieux vaut une journée tenue qu\'une journée ratée.</div>':'';}
+
+/* ---------- PROFIL ---------- */
+function renderProfil(){$('#profBiz').textContent=MODULES[S.chosen||'M4'].name;$('#profStreak').textContent=S.streak;$('#profBrain').textContent=motivation();}
+
+/* ---------- HANDLERS (journée / agent / planner / astuces) ---------- */
+if($('#prepBtn'))$('#prepBtn').addEventListener('click',openPlanner);
+$('#taskAdd').addEventListener('click',addTask);
+$('#taskIn').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+$('#bsToggle').addEventListener('click',()=>{const p=$('#bsPanel'),open=p.style.display!=='none'&&p.style.display!=='';if(open){p.style.display='none';$('#bsToggle').textContent='Je bloque, aide-moi à réfléchir';}else{renderBrainstorm();p.style.display='block';$('#bsToggle').textContent='Masquer les pistes';}});
+$('#plannerNext').addEventListener('click',()=>{renderCtxChips();show('plannerCtx');});
+$('#plannerGen').addEventListener('click',()=>{show('plannerLoad');const msgs=['On cale chaque tâche au bon moment.','On met le focus quand t\'as l\'énergie…','On adapte à ton lieu…'];let n=0;const t=setInterval(()=>{n++;if(msgs[n])$('#planLoadSub').textContent=msgs[n];},560);setTimeout(()=>{clearInterval(t);buildTomorrow();show('plannerRes');},1800);});
+$('#planValidate').addEventListener('click',()=>{show('home');toast('Ta journée de demain est prête. À demain !');});
+$('#chatSend').addEventListener('click',sendChat);
+$('#chatIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+$('#tipMore').addEventListener('click',()=>{const t=curTips();if(!t.length)return;$('#tipTx').textContent=t[S.tipI%t.length];S.tipI++;});
+$('#tipClose').addEventListener('click',()=>$('#tipSheet').classList.remove('show'));
+
+/* ---------- PERSISTANCE (localStorage) ---------- */
+const SKEY='roize.v1';
+function saveState(){try{localStorage.setItem(SKEY,JSON.stringify({done:!!S.profiled,ans:S.ans,ranked:S.ranked,chosen:S.chosen,brain:S.brain,streak:S.streak,feats:S.feats,day:S.day,idx:S.idx,dayDone:S.dayDone,checkin:S.checkin,tipI:S.tipI}));}catch(e){}}
+function loadState(){try{const r=localStorage.getItem(SKEY);if(!r)return false;const d=JSON.parse(r);if(!d||!d.done||!d.chosen||!MODULES[d.chosen])return false;Object.assign(S,d);S.profiled=true;return true;}catch(e){return false;}}
+function restartOnboarding(){try{localStorage.removeItem(SKEY);}catch(e){}S.chosen=null;S.ranked=[];S.day=null;S.streak=1;S.brain=62;S.feats=[];S.dayDone=0;S.idx=0;S.tipI=0;S.profiled=false;S.checkin={sleep:null,food:null,energy:null};startQuiz();}
+const profRows=document.querySelectorAll('#profil .prow');
+if(profRows[0])profRows[0].addEventListener('click',restartOnboarding);
+
+/* routing initial : deep-link > utilisateur connu (home) > welcome */
+if(location.hash){ const id=location.hash.slice(1); if(document.getElementById(id)){ if(id==='quiz')startQuiz(); else show(id); } }
+else if(loadState()){ show('home'); }
+</script>
+</body>
+</html>
